@@ -73,9 +73,14 @@ The weather data with information on temperature, wind and precipitation we will
 
 ## Analytical concepts
 
+In the semester project, we will use movements in space with discrete properties and the conceptual model of Network Space in three dimensions. The movement we will analyze was actively performed by Daniel in a confined area that uniformly includes trails and roads. The observation perspective will be active tracking performed using a Garmin Forerunner 245 watch with an integrated GPS sensor, with measurements taken at irregular intervals.
 <!-- Which analytical concepts will you use? What conceptual movement spaces and respective modelling approaches of trajectories will you be using? What additional spatial analysis methods will you be using? -->
 
 ## R concepts
+
+First, we will import the GPX files into RStudio.
+We will change the coordinate system and measure the average speed between the measured points.
+Next, we want to measure the sinuosity using a time window. The problem is that our points are measured at irregular intervals. Therefore, we are considering inserting points at regular intervals artificially along the running trajectory. After that, we need to assign an elevation above sea level to each point. Then, we can categorize the slope and sinuosity of the route into three levels. ...
 
 <!-- Which R concepts, functions, packages will you mainly use. What additional spatial analysis methods will you be using? -->
 
@@ -84,5 +89,8 @@ The weather data with information on temperature, wind and precipitation we will
 <!-- What could be the biggest challenges/problems you might face? What is your plan B? -->
 
 ## Questions?
+How can we work with data that has been measured at irregular intervals?
+How can we add altitude above sea level to our points?
+How can we calculate sinuosity?
 
 <!-- Which questions would you like to discuss at the coaching session? -->
