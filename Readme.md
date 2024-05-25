@@ -11,8 +11,8 @@ quarto render Readme.md --to pdf
 
 | Semester:      | FS24                                                                             |
 |:---------------|:----------------------------------------                                         |
-| **Data:**      | GPX data related to running workouts measured with a Garmin Forerunner 245 watch |   
-| **Title:**      | Identification of patterns and trends in running training performance           |
+| **Data:**      | GPX data related to running workouts measured with a Garmin Forerunner 245 watch |
+| **Title:**     | Identification of patterns and trends in running training performance            |
 | **Student 1:** | Daniel Cellerino                                                                 | 
 | **Student 2:** | Sophie Blatter                                                                   |
 
@@ -26,7 +26,10 @@ quarto render Readme.md --to pdf
 
 Research Question 1: On which terrain levels (flat, moderate, steep) does Daniel gain or lose time compared to the average speed for these sections across different runs on the same route?
 
-Research Question 2: How does the temperature, precipitation and wind on the day of the run affect Daniel's overall speed on the same route over different years?
+Research Question 2: Considering the slope of the terrain, does the frequency of curves on the track affect the speed?
+
+(löschen)
+(ich gluabe ist schwierig zum machen und auch nicht so wichtig für diese Modul): Research Question 2: How does the temperature, precipitation and wind on the day of the run affect Daniel's overall speed on the same route over different years?
 
 ## Results / products
 
@@ -40,11 +43,16 @@ For the first research question we anticipate that Daniel's performance will var
 
 -   On moderate terrain, there may be a slight reduction in speed compared to flat sections, with some variability depending on specific conditions during each run.
 
--   The steep sections are expected to show the greatest variability in speed and the most significant time deviations. Daniel may lose more time in these sections compared to the average, particularly on runs with less favorable conditions (weather).
+-   The steep sections are expected to show the greatest variability in speed and the most significant time deviations. In these sections, physical conditions could be of significant importance and have a greater impact on the variability of the three analyzed runs.
 
 We anticipate to identify specific sections where Daniel can focus his training to improve performance.
 
 Research question 2:
+
+-   For the second research question, we expect to find that in sections with steep inclines, the tortuosity of the path does not influence the running speed. On terrain with moderate or flat slopes, where speeds will be higher, we expect that numerous changes in direction, at the same incline, may affect the running speed.
+
+
+(Löschen)
 
 -   For the second research question we expect to find that higher temperatures may correlate with slower overall speeds due to increased physical stress. Conversely, moderate, cooler temperatures might be associated with faster speeds.
 
@@ -60,6 +68,7 @@ We anticipate that adverse weather conditions will generally correlate with slow
 
 We will use movement data recorded by Daniel on Strava over several years. From this data, we will focus on runs that Daniel has done on the same route in different years. We will divide the route into sections based on three terrain levels (flat, moderate, steep) and compare the average speed in these sections across different runs. The terrain levels we will conclude by mapping the route on arcGIS and adding a layer with terrain information from Swisstopo.
 
+(löschen)
 The weather data with information on temperature, wind and precipitation we will get from the archive of Swiss Meteo.
 
 ## Analytical concepts
