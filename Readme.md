@@ -9,27 +9,28 @@ quarto render Readme.md --to pdf
 ```
 **Patterns & Trends in Environmental Data / Computational Movement Analysis Geo 880**
 
-| Semester:      | FS24                                                                             |
-|:---------------|:----------------------------------------                                         |
-| **Data:**      | GPX data related to running workouts measured with a Garmin Forerunner 245 watch |
-| **Title:**     | Identification of patterns and trends in running training performance            |
-| **Student 1:** | Daniel Cellerino                                                                 | 
-| **Student 2:** | Sophie Blatter                                                                   |
+| Semester:      | FS24                                                                  |
+|:---------------|:----------------------------------------                              |
+| **Data:**      | GPX data related to running workouts measured with a Garmin watch     |
+| **Title:**     | Identification of patterns and trends in running training performance |
+| **Student 1:** | Daniel Cellerino                                                      | 
+| **Student 2:** | Sophie Blatter                                                        |
 
 ## Abstract
 
 <!-- (50-60 words) -->
 
+In this project, we will analyze three running sessions executed by Daniel on the same route at different times of the year or in different years. The goal is to identify clusters of route segments that exhibit similar performances. This will allow us to uncover distinct patterns or behaviors during the run, understanding which parts of the route most significantly impact Daniel's performance and on which segments he can focus his training to improve his overall performance. This is achieved by performing similarity analysis using Dynamic Time Warping (DTW) to compare the trajectories of the runs, taking into account the different sampling frequencies and the number of recorded points. Subsequently, we will apply a Monte Carlo simulation to assess the robustness of the obtained results.
+
 ## Research Questions
 
 <!-- (50-60 words) -->
 
-Research Question 1: On which terrain levels (flat, moderate, steep) does Daniel gain or lose time compared to the average speed for these sections across different runs on the same route?
 
-Research Question 2: Considering the slope of the terrain, does the frequency of curves on the track affect the speed?
+Research Question 1: What are the recurring patterns in the performances of three running sessions executed on the same route at different times of the year?
 
-(löschen)
-(ich gluabe ist schwierig zum machen und auch nicht so wichtig für diese Modul): Research Question 2: How does the temperature, precipitation and wind on the day of the run affect Daniel's overall speed on the same route over different years?
+Research Question 2: How can the identified patterns in the running performances be utilized to improve performance?
+
 
 ## Results / products
 
@@ -49,54 +50,52 @@ We anticipate to identify specific sections where Daniel can focus his training 
 
 Research question 2:
 
--   For the second research question, we expect to find that in sections with steep inclines, the tortuosity of the path does not influence the running speed. On terrain with moderate or flat slopes, where speeds will be higher, we expect that numerous changes in direction, at the same incline, may affect the running speed.
+-   For the second research question, we expect that Daniel can improve his performance by focusing on better preparation for uphill segments of the run.
 
-
-(Löschen)
-
--   For the second research question we expect to find that higher temperatures may correlate with slower overall speeds due to increased physical stress. Conversely, moderate, cooler temperatures might be associated with faster speeds.
-
--   Runs on days with precipitation (rain, snow) are expected to show a decrease in overall speed due to slippery surfaces and bad vision.
-
--   Strong headwinds could slow down Daniel's runs, while tailwinds might help increase his speed.
-
-We anticipate that adverse weather conditions will generally correlate with slower run times, while more favorable weather conditions will support faster overall speeds.
 
 ## Data
 
 <!-- What data will you use? Will you require additional context data? Where do you get this data from? Do you already have all the data? -->
 
-We will use movement data recorded by Daniel on Strava over several years. From this data, we will focus on runs that Daniel has done on the same route in different years. We will divide the route into sections based on three terrain levels (flat, moderate, steep) and compare the average speed in these sections across different runs. The terrain levels we will conclude by mapping the route on arcGIS and adding a layer with terrain information from Swisstopo.
+We will use movement data recorded by Daniel using a Garmin watch and uploaded to Strava over several years. At the same time, it will be necessary to ensure that the data, in addition to containing geographic coordinates, also include elevation values above sea level. If this information is not present in the GPX file downloaded from Strava, it will be necessary to extract it from external sources.
 
-(löschen)
-The weather data with information on temperature, wind and precipitation we will get from the archive of Swiss Meteo.
 
 ## Analytical concepts
-
-In the semester project, we will use movements in space with discrete properties and the conceptual model of Network Space in three dimensions. The movement we will analyze was actively performed by Daniel in a confined area that uniformly includes trails and roads. The observation perspective will be active tracking performed using a Garmin Forerunner 245 watch with an integrated GPS sensor, with measurements taken at irregular intervals.
 <!-- Which analytical concepts will you use? What conceptual movement spaces and respective modelling approaches of trajectories will you be using? What additional spatial analysis methods will you be using? -->
+
+In our semester project, we will primarily use analytical concepts related to trajectory analysis. We will use conceptual movement spaces with discrete properties and adopt the trajectory modeling approach based on the concept of three-dimensional network space. This will allow us to understand the patterns and behaviors in Daniel's movements along the designated route. Additionally, we will use additional spatial analysis methods such as map matching to associate trajectory points with road segments and slope calculation to assess the difficulty of different sections of the route.
+
 
 ## R concepts
 
-First, we will import the GPX files into RStudio.
-We will change the coordinate system and measure the average speed between the measured points.
-Next, we want to measure the sinuosity using a time window. The problem is that our points are measured at irregular intervals. Therefore, we are considering inserting points at regular intervals artificially along the running trajectory. After that, we need to assign an elevation above sea level to each point. Then, we can categorize the slope and sinuosity of the route into three levels. ...
+1. GPX Data Importation
+-   Installation and loading of necessary libraries.
+-   Importation of GPX files for three running sessions (sf).
 
-How do we then identify the patterns? Do we want to see if the speed decreases with the percentage increase in slope? Or do we only want to see a difference between the three categories? The same applies to sinuosity. Furthermore, how do we want to correct the running data? The points will not be identical due to GPS accuracy and precision errors. Which method do we want to use to correct them to make them homogeneous?
+2. Normalization and Data Preprocessing
+-   Changing the coordinate system and calculating average speed between points (sf, dplyr).
+-   Adding elevation data and calculating slope (elevatr).
+
+3. Similarity Analysis with DTW
+-   Calculation of DTW distances between the three running sessions (dtw).
+-   Normalization and clustering using DTW distances.
+
+4. Monte Carlo Simulation on Results
+-   Adding noise to the results.
+-   Running Monte Carlo simulation and analyzing the results.
+
+Additionally, we may explore other spatial analysis methods as needed during the project, such as map matching algorithms or stop-and-move detection techniques
 
 <!-- Which R concepts, functions, packages will you mainly use. What additional spatial analysis methods will you be using? -->
 
 ## Risk analysis
-
-We need to decide whether to also consider the downhill sections of the run. In that case, the speed decreases compared to running on flat terrain. In this scenario, we could possibly create another category for the downhill sections.
-
+We need to decide whether to also consider the downhill sections of the run. In that case, the speed decreases compared to running on flat terrain. 
 
 It is likely that due to the GPS accuracy, it will not be possible to measure the sinuosity of the path since the measurement intervals are irregular and the watch's accuracy in optimal conditions is 3-5 meters.
 <!-- What could be the biggest challenges/problems you might face? What is your plan B? -->
 
 ## Questions?
-How can we work with data that has been measured at irregular intervals?
+How can we work with data that has been measured at irregular intervals (DTW)?
 How can we add altitude above sea level to our points?
-How can we calculate sinuosity?
 
 <!-- Which questions would you like to discuss at the coaching session? -->
