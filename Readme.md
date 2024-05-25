@@ -82,10 +82,16 @@ First, we will import the GPX files into RStudio.
 We will change the coordinate system and measure the average speed between the measured points.
 Next, we want to measure the sinuosity using a time window. The problem is that our points are measured at irregular intervals. Therefore, we are considering inserting points at regular intervals artificially along the running trajectory. After that, we need to assign an elevation above sea level to each point. Then, we can categorize the slope and sinuosity of the route into three levels. ...
 
+How do we then identify the patterns? Do we want to see if the speed decreases with the percentage increase in slope? Or do we only want to see a difference between the three categories? The same applies to sinuosity. Furthermore, how do we want to correct the running data? The points will not be identical due to GPS accuracy and precision errors. Which method do we want to use to correct them to make them homogeneous?
+
 <!-- Which R concepts, functions, packages will you mainly use. What additional spatial analysis methods will you be using? -->
 
 ## Risk analysis
 
+We need to decide whether to also consider the downhill sections of the run. In that case, the speed decreases compared to running on flat terrain. In this scenario, we could possibly create another category for the downhill sections.
+
+
+It is likely that due to the GPS accuracy, it will not be possible to measure the sinuosity of the path since the measurement intervals are irregular and the watch's accuracy in optimal conditions is 3-5 meters.
 <!-- What could be the biggest challenges/problems you might face? What is your plan B? -->
 
 ## Questions?
