@@ -9,11 +9,9 @@ quarto render Readme.md --to pdf
 ```
 **Patterns & Trends in Environmental Data / Computational Movement Analysis Geo 880**
 
-| Semester:      | FS24                                       |
-|:---------------|:----------------------------------------   |
-| **Data:**      | GPX data related to running workouts       | 
-|                | measured with a Garmin Forerunner 245 watch|
-| **Title:**     | Identification of patterns and trends in   |
+| Semester:      | FS24                                                                                   |
+|:---------------|:----------------------------------------                                               |
+| **Data:**      | GPX data related to running workouts measured with a Garmin Forerunner 245 watch       |   | **Title:**     | Identification of patterns and trends in   |
 |                | running training performance               |
 | **Student 1:** | Daniel Cellerino                           |
 | **Student 2:** | Sophie Blatter                             |
