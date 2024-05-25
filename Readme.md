@@ -11,10 +11,9 @@ quarto render Readme.md --to pdf
 
 | Semester:      | FS24                                                                                   |
 |:---------------|:----------------------------------------                                               |
-| **Data:**      | GPX data related to running workouts measured with a Garmin Forerunner 245 watch       |   | **Title:**     | Identification of patterns and trends in   |
-|                | running training performance               |
-| **Student 1:** | Daniel Cellerino                           |
-| **Student 2:** | Sophie Blatter                             |
+| **Data:**      | GPX data related to running workouts measured with a Garmin Forerunner 245 watch       |   | **Title:**     | Identification of patterns and trends in running training performance                  |
+| **Student 1:** | Daniel Cellerino                                                                       | 
+| **Student 2:** | Sophie Blatter                                                                         |
 
 ## Abstract
 
