@@ -15,6 +15,66 @@ bibliography: bibliography.bib
 ```{r preprocessing}
 #| code-summary: preprocessing
 
+# Als erstes: Die Dateien sind im FIT Format: wir brauchen das Package FITfileR
+if(!requireNamespace("remotes")) {
+    install.packages("remotes")
+}
+
+remotes::install_github("grimbough/FITfileR")
+
+library(FITfileR)
+library(sf)
+library(ggplot2)
+
+
+fit_path <- "10062007438.fit"
+
+# Daten einlesen:
+fit_data <- readFitFile(fit_path)
+records <- records(fit_data)
+
+
+convert_to_degrees <- function(semi_circles) {
+  semi_circles * (180 / 2^31)
+}
+
+# Datenrahmen erstellen für alle Aufzeichnungen
+coords_list <- lapply(records, function(record) {
+  if ("position_lat" %in% names(record) & "position_long" %in% names(record)) {
+    lat <- convert_to_degrees(record$position_lat)
+    long <- convert_to_degrees(record$position_long)
+    data.frame(latitude = lat, longitude = long)
+  } else {
+    NULL
+  }
+})
+
+coords_list <- coords_list[!sapply(coords_list, is.null)]
+
+
+# Konvertieren der Koordinaten in räumliche Objekte und transformieren
+coords_lv95_list <- lapply(coords_list, function(coords) {
+  coords_sf <- st_as_sf(coords, coords = c("longitude", "latitude"), crs = 4326) # WGS84
+  st_transform(coords_sf, crs = 2056) # LV95
+})
+
+# Alle Läufe in einen DataFrame zusammenführen
+coords_lv95_all <- do.call(rbind, lapply(seq_along(coords_lv95_list), function(i) {
+  coords_lv95_list[[i]]$run <- paste("Run", i)
+  coords_lv95_list[[i]]
+}))
+
+# Plotten der Läufe auf einer Karte
+ggplot() +
+  geom_sf(data = coords_lv95_all, aes(color = run), size = 1) +
+  theme_minimal() +
+  labs(title = "Läufe auf einer Karte",
+       x = "E",
+       y = "N",
+       color = "Lauf")
+
+
+
 ``` 
 
 
