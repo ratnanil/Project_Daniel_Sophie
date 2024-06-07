@@ -26,31 +26,207 @@ library(FITfileR)
 library(sf)
 library(ggplot2)
 library(dplyr)
-
-fit2sf <- function(fit_path){
-  # fit_path <- "10062007438.fit"
-
-# Daten einlesen:
-  fit_data <- readFitFile(fit_path)
-records <- records(fit_data)
-
-  df <- records[[1]]
-
-  st_as_sf(records[[1]], coords = c("position_long", "position_lat"), crs = 4326) |> 
-    mutate(fit_file = fit_path)
-}
-
-fitfiles <- list.files(pattern = "\\.fit$")
-
-fit_list <- lapply(fitfiles, fit2sf)
-
-do.call(rbind, fit_list) |> View()
+library(readr)
+library(tidyverse)
 
 
 
+
+# Funktion zum Umrechnen von Semicircles in Grad
 convert_to_degrees <- function(semi_circles) {
   semi_circles * (180 / 2^31)
 }
+
+# Funktion erstellen fit to sf und coordinaten umwandeln CH
+fit2sf <- function(fit_path){
+  
+  fit_data <- readFitFile(fit_path)
+  records <- records(fit_data)
+ 
+  df <- records[[1]]
+
+  if ("position_lat" %in% names(df) && "position_long" %in% names(df)) {
+    df <- df %>%
+      mutate(
+        position_lat = convert_to_degrees(position_lat),
+        position_long = convert_to_degrees(position_long),
+        fit_file = fit_path
+      )
+
+    st_as_sf(df, coords = c("position_long", "position_lat"), crs = 4326)
+  } else {
+    NULL  # Gibt NULL zurück, wenn keine Koordinaten vorhanden sind
+  }
+}
+
+# Funktion zum Extrahieren von .fit-Dateien aus .gz-Dateien
+extract_fit_from_gz <- function(gz_file, output_dir = "extracted_fit_files") {
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir)
+  }
+  
+# Voller Pfad für die Extraktion erstellen
+  fit_file_path <- file.path(output_dir, gsub(".gz$", ".fit", basename(gz_file)))
+  
+# Öffne die .gz-Datei und schreibe den Inhalt in eine .fit-Datei
+  con <- gzfile(gz_file, "rb")
+  fit_data <- readBin(con, what = raw(), n = 1e6)
+  close(con)
+  
+  writeBin(fit_data, fit_file_path)
+  
+  return(fit_file_path)
+}
+
+# CSV-Datei mit Informationen zu Aktivitäten lesen
+activity_info <- read_csv("export/activities.csv")
+
+# Laufaktivitäten finden und ihre Dateinamen extrahieren
+running_activities <- activity_info %>%
+  filter(`Tipo attività` == "Corsa") %>%
+  pull(`Nome del file`)
+
+# Unterordner im Verzeichnis "export/activities" finden
+sub_dirs <- list.dirs(path = "export/activities", full.names = TRUE, recursive = TRUE)
+
+# Alle .gz-Dateien in diesen Unterordnern finden
+gz_files <- unlist(lapply(sub_dirs, function(dir) {
+  list.files(path = dir, pattern = "\\.gz$", full.names = TRUE)
+}))
+
+# .fit-Dateien aus jeder .gz-Datei extrahieren
+fit_files <- lapply(gz_files, extract_fit_from_gz)
+
+# Filtern der NULL-Dateien und sicherstellen, dass die Pfade Zeichenvektoren sind
+fit_files <- unlist(fit_files[!sapply(fit_files, is.null)])
+
+# Dateinamen der vorhandenen .fit-Dateien im Verzeichnis "extracted_fit_files" finden
+existing_fit_names <- list.files(path = "extracted_fit_files", pattern = "\\.fit$", full.names = TRUE)
+
+# Vollständige Pfade der Dateien relativ zum Verzeichnis "extracted_fit_files" erstellen
+existing_fit_paths <- file.path("extracted_fit_files", basename(existing_fit_names))
+
+# Nur die Dateinamen der .fit-Dateien aus der Liste der vollständigen Pfade extrahieren und Pfad und Erweiterung entfernen
+existing_fit_names <- tools::file_path_sans_ext(basename(existing_fit_paths))
+
+# Nur die Dateinamen der Laufaktivitäten extrahieren und Pfad und Erweiterung entfernen
+running_activity_names <- tools::file_path_sans_ext(basename(running_activities))
+
+# Nur die .fit-Dateien behalten, die Laufaktivitäten entsprechen
+fit_files_to_keep <- existing_fit_paths[existing_fit_names %in% running_activity_names]
+
+# Nicht benötigte .fit-Dateien im Verzeichnis "extracted_fit_files" entfernen
+files_to_remove <- setdiff(existing_fit_paths, fit_files_to_keep)
+
+for (fit_file in files_to_remove) {
+  print(paste("Löschen der Datei:", fit_file))
+  file.remove(fit_file)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Wende die Funktion 'fit2sf' auf alle extrahierten FIT-Dateien an und entferne alle eventuellen NULL-Werte.
+fit_list <- lapply(fit_files_filtered, fit2sf) %>% 
+  Filter(Negate(is.null), .)
+
+# Vereinige alle sf-Objekte zu einem einzigen und zeige sie an.
+fit_sf <- do.call(rbind, fit_list)
+
+# Visualizza i dati combinati
+if (!is.null(fit_sf)) {
+  print(fit_sf)
+  ggplot(fit_sf) +
+    geom_sf() +
+    theme_minimal()
+} else {
+  message("Nessun dato valido trovato nei file FIT.")
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Wende die Funktion 'fit2sf' auf alle extrahierten FIT-Dateien an und entferne alle eventuellen NULL-Werte.
+fit_list <- lapply(fit_files, fit2sf) %>% 
+  Filter(Negate(is.null), .)
+
+# Vereinige alle sf-Objekte zu einem einzigen und zeige sie an.
+fit_sf <- do.call(rbind, fit_list)
+
+
+
+
+
+
+
+# Visualizza i dati combinati
+if (!is.null(fit_sf)) {
+  print(fit_sf)
+  ggplot(fit_sf) +
+    geom_sf() +
+    theme_minimal()
+} else {
+  message("Nessun dato valido trovato nei file FIT.")
+}
+
+
+
+
 
 # Datenrahmen erstellen für alle Aufzeichnungen
 coords_list <- lapply(records, function(record) {
