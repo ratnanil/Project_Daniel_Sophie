@@ -28,6 +28,7 @@ library(ggplot2)
 library(dplyr)
 library(readr)
 library(tidyverse)
+library(leaflet)
 
 
 
@@ -122,30 +123,111 @@ for (fit_file in files_to_remove) {
   print(paste("Löschen der Datei:", fit_file))
   file.remove(fit_file)
 }
+------------------------------------------------------------------------------------------
+#Importare i file in RStudio
+# Lista dei file FIT
+fit_files <- list.files(path = "extracted_fit_files", pattern = "\\.fit$", full.names = TRUE)
+
+# Leggi tutti i dati FIT e combinali in un unico dataframe
+combined_data <- lapply(fit_files, function(file) {
+  fit2sf(file)
+}) %>%
+  bind_rows()
+
+# Visualizza le prime righe del dataframe combinato
+head(combined_data)
+
+----------------------------------------------------------------------------------------------------------
+#filtrare corse in CH
+ Installa e carica i pacchetti necessari
+install.packages("rnaturalearth")
+install.packages("rnaturalearthdata")
+install.packages("sf")
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+library(dp)
+
+switzerland_boundary <- ne_countries(scale = "medium", country = "Switzerland", returnclass = "sf")
+
+head(combined_data$geometry)
+--------------------------------------------------------------------------------------------
+library(sf)
+library(dplyr)
+library(stringr)
+
+# Verifica del sistema di coordinate attuale
+current_crs <- st_crs(combined_data)
+print(current_crs)
+
+# Assicurati che il CRS di partenza sia definito correttamente (WGS 84 in questo caso)
+if (is.na(current_crs)) {
+  combined_data <- st_set_crs(combined_data, 4326)  # Assumendo WGS 84
+}
+
+# Definisce il sistema di coordinate svizzero (CH1903+ / LV95)
+target_crs <- st_crs(2056)
+
+# Converte le coordinate nel sistema di coordinate target
+combined_data1 <- st_transform(combined_data, crs = target_crs)
 
 
+# Visualizza le prime righe dei dati trasformati per verificare
+print(head(combined_data1))
 
+# Controlla se le coordinate risultanti sono sensate
+coordinate_check <- st_coordinates(combined_data1)
+print(coordinate_check)
 
+# Se le coordinate risultanti non sono sensate, potrebbe esserci un problema nella trasformazione o nei dati di partenza
+if (any(coordinate_check < 0)) {
+  message("Attenzione: sono presenti coordinate negative. Verifica i dati di partenza e la trasformazione.")
+}
 
+# Estrai le coordinate come testo e rimuovi il prefisso "POINT"
+combined_data1 <- combined_data1 %>%
+  mutate(
+    geometry_text = st_as_text(geometry),
+    geometry_text = gsub("POINT \\(|\\)", "", geometry_text),
+    lon = as.numeric(str_split_fixed(geometry_text, " ", 2)[, 1]),
+    lat = as.numeric(str_split_fixed(geometry_text, " ", 2)[, 2])
+  ) %>%
+  select(-geometry_text)
 
+# Visualizza le prime righe per verificare il risultato
+print(head(combined_data1))
+  
+  
+ 
+library(sf)
+library(dplyr)
+library(stringr)
 
+# Verifica del sistema di coordinate attuale
+current_crs <- st_crs(combined_data)
+print(current_crs)
 
+# Definisce il sistema di coordinate svizzero (CH1903+ / LV95)
+target_crs <- st_crs(2056)
 
+# Converte le coordinate nel sistema di coordinate target
+combined_data1 <- st_transform(combined_data, crs = target_crs)
 
+# Estrai le coordinate come testo, rimuovi il prefisso "POINT", e riconverti in geometria
+combined_data1 <- combined_data1 %>%
+  mutate(
+    geometry_text = gsub("POINT \\(|\\)", "", st_as_text(geometry)),  # Rimuove "POINT (" e ")" lasciando solo le coordinate
+    geometry = st_as_sfc(paste0("POINT(", geometry_text, ")"))  # Riconverti in geometria
+  )
 
+# Visualizza le prime righe per verificare il risultato
+print(head(combined_data1))
 
+# Crea un oggetto sf
+sf_data <- st_as_sf(combined_data, coords = c("lon", "lat"), crs = 4326)
 
-
-
-
-
-
-
-
-
-
-
-
+# Controlla l'output
+print(sf_data)
 
 
 
@@ -176,53 +258,6 @@ fit_list <- lapply(fit_files_filtered, fit2sf) %>%
 # Vereinige alle sf-Objekte zu einem einzigen und zeige sie an.
 fit_sf <- do.call(rbind, fit_list)
 
-# Visualizza i dati combinati
-if (!is.null(fit_sf)) {
-  print(fit_sf)
-  ggplot(fit_sf) +
-    geom_sf() +
-    theme_minimal()
-} else {
-  message("Nessun dato valido trovato nei file FIT.")
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Wende die Funktion 'fit2sf' auf alle extrahierten FIT-Dateien an und entferne alle eventuellen NULL-Werte.
-fit_list <- lapply(fit_files, fit2sf) %>% 
-  Filter(Negate(is.null), .)
-
-# Vereinige alle sf-Objekte zu einem einzigen und zeige sie an.
-fit_sf <- do.call(rbind, fit_list)
-
-
-
-
-
-
-
-# Visualizza i dati combinati
-if (!is.null(fit_sf)) {
-  print(fit_sf)
-  ggplot(fit_sf) +
-    geom_sf() +
-    theme_minimal()
-} else {
-  message("Nessun dato valido trovato nei file FIT.")
-}
 
 
 
