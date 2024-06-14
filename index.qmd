@@ -16,12 +16,48 @@ bibliography: bibliography.bib
 #| code-summary: preprocessing
 
 # Als erstes: Die Dateien sind im FIT Format: wir brauchen das Package FITfileR
-if(!requireNamespace("remotes")) {
-    install.packages("remotes")
+# Install and load necessary libraries
+if (!requireNamespace("rnaturalearth", quietly = TRUE)) {
+  install.packages("rnaturalearth")
 }
 
-remotes::install_github("grimbough/FITfileR")
+if (!requireNamespace("tmap", quietly = TRUE)) {
+  install.packages("tmap")
+}
 
+if (!requireNamespace("sf", quietly = TRUE)) {
+  install.packages("sf")
+}
+
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+
+if (!requireNamespace("readr", quietly = TRUE)) {
+  install.packages("readr")
+}
+
+if (!requireNamespace("tidyverse", quietly = TRUE)) {
+  install.packages("tidyverse")
+}
+
+if (!requireNamespace("leaflet", quietly = TRUE)) {
+  install.packages("leaflet")
+}
+
+if (!requireNamespace("FITfileR", quietly = TRUE)) {
+  if (!requireNamespace("remotes", quietly = TRUE)) {
+    install.packages("remotes")
+  }
+  remotes::install_github("grimbough/FITfileR")
+}
+
+library(rnaturalearth)
+library(tmap)
 library(FITfileR)
 library(sf)
 library(ggplot2)
@@ -30,34 +66,25 @@ library(readr)
 library(tidyverse)
 library(leaflet)
 
-
-
-
-# Funktion zum Umrechnen von Semicircles in Grad
-convert_to_degrees <- function(semi_circles) {
-  semi_circles * (180 / 2^31)
-}
-
-# Funktion erstellen fit to sf und coordinaten umwandeln CH
+#########################################################################################
+# Definire eine Funktion zum konvertieren FIT-Datensätze mit geografischen Koordinaten in ein `sf`-Format.
 fit2sf <- function(fit_path){
   
   fit_data <- readFitFile(fit_path)
   records <- records(fit_data)
  
-  df <- records[[1]]
 
-  if ("position_lat" %in% names(df) && "position_long" %in% names(df)) {
-    df <- df %>%
-      mutate(
-        position_lat = convert_to_degrees(position_lat),
-        position_long = convert_to_degrees(position_long),
-        fit_file = fit_path
-      )
-
-    st_as_sf(df, coords = c("position_long", "position_lat"), crs = 4326)
+  imap(records, function(x,y){
+     if ("position_lat" %in% names(x) && "position_long" %in% names(x)) {
+    
+    st_as_sf(x, coords = c("position_long", "position_lat"), crs = 4326) |> 
+         mutate(record = y)
   } else {
     NULL  # Gibt NULL zurück, wenn keine Koordinaten vorhanden sind
   }
+  }) -> all_records
+
+    bind_rows(all_records)
 }
 
 # Funktion zum Extrahieren von .fit-Dateien aus .gz-Dateien
@@ -123,187 +150,72 @@ for (fit_file in files_to_remove) {
   print(paste("Löschen der Datei:", fit_file))
   file.remove(fit_file)
 }
-------------------------------------------------------------------------------------------
-#Importare i file in RStudio
-# Lista dei file FIT
-fit_files <- list.files(path = "extracted_fit_files", pattern = "\\.fit$", full.names = TRUE)
-
-# Leggi tutti i dati FIT e combinali in un unico dataframe
-combined_data <- lapply(fit_files, function(file) {
-  fit2sf(file)
-}) %>%
-  bind_rows()
-
-# Visualizza le prime righe del dataframe combinato
-head(combined_data)
-
-----------------------------------------------------------------------------------------------------------
-#filtrare corse in CH
- Installa e carica i pacchetti necessari
-install.packages("rnaturalearth")
-install.packages("rnaturalearthdata")
-install.packages("sf")
-library(rnaturalearth)
-library(rnaturalearthdata)
-library(sf)
-library(dp)
-
-switzerland_boundary <- ne_countries(scale = "medium", country = "Switzerland", returnclass = "sf")
-
-head(combined_data$geometry)
---------------------------------------------------------------------------------------------
-library(sf)
-library(dplyr)
-library(stringr)
-
-# Verifica del sistema di coordinate attuale
-current_crs <- st_crs(combined_data)
-print(current_crs)
-
-# Assicurati che il CRS di partenza sia definito correttamente (WGS 84 in questo caso)
-if (is.na(current_crs)) {
-  combined_data <- st_set_crs(combined_data, 4326)  # Assumendo WGS 84
-}
-
-# Definisce il sistema di coordinate svizzero (CH1903+ / LV95)
-target_crs <- st_crs(2056)
-
-# Converte le coordinate nel sistema di coordinate target
-combined_data1 <- st_transform(combined_data, crs = target_crs)
+#################################################################################################
+#Importiere alle FIT-Dateien in RStudio und erstelle eine Liste
+fit_files <- list.files(path = "extracted_fit_files/", pattern = "\\.fit$", full.names = TRUE)
 
 
-# Visualizza le prime righe dei dati trasformati per verificare
-print(head(combined_data1))
-
-# Controlla se le coordinate risultanti sono sensate
-coordinate_check <- st_coordinates(combined_data1)
-print(coordinate_check)
-
-# Se le coordinate risultanti non sono sensate, potrebbe esserci un problema nella trasformazione o nei dati di partenza
-if (any(coordinate_check < 0)) {
-  message("Attenzione: sono presenti coordinate negative. Verifica i dati di partenza e la trasformazione.")
-}
-
-# Estrai le coordinate come testo e rimuovi il prefisso "POINT"
-combined_data1 <- combined_data1 %>%
-  mutate(
-    geometry_text = st_as_text(geometry),
-    geometry_text = gsub("POINT \\(|\\)", "", geometry_text),
-    lon = as.numeric(str_split_fixed(geometry_text, " ", 2)[, 1]),
-    lat = as.numeric(str_split_fixed(geometry_text, " ", 2)[, 2])
-  ) %>%
-  select(-geometry_text)
-
-# Visualizza le prime righe per verificare il risultato
-print(head(combined_data1))
+combined_data <- map(fit_files[], function(file) {
+  # Konvertiere FIT-Datei in ein Datenframe
+  sf_data <- fit2sf(file)
   
+  # Benenne Spalten um, wenn erforderlich
+  colnames(sf_data) <- gsub("enhanced_speed", "speed", colnames(sf_data))
+  colnames(sf_data) <- gsub("enhanced_altitude", "altitude", colnames(sf_data))
   
- 
-library(sf)
-library(dplyr)
-library(stringr)
-
-# Verifica del sistema di coordinate attuale
-current_crs <- st_crs(combined_data)
-print(current_crs)
-
-# Definisce il sistema di coordinate svizzero (CH1903+ / LV95)
-target_crs <- st_crs(2056)
-
-# Converte le coordinate nel sistema di coordinate target
-combined_data1 <- st_transform(combined_data, crs = target_crs)
-
-# Estrai le coordinate come testo, rimuovi il prefisso "POINT", e riconverti in geometria
-combined_data1 <- combined_data1 %>%
-  mutate(
-    geometry_text = gsub("POINT \\(|\\)", "", st_as_text(geometry)),  # Rimuove "POINT (" e ")" lasciando solo le coordinate
-    geometry = st_as_sfc(paste0("POINT(", geometry_text, ")"))  # Riconverti in geometria
-  )
-
-# Visualizza le prime righe per verificare il risultato
-print(head(combined_data1))
-
-# Crea un oggetto sf
-sf_data <- st_as_sf(combined_data, coords = c("lon", "lat"), crs = 4326)
-
-# Controlla l'output
-print(sf_data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Wende die Funktion 'fit2sf' auf alle extrahierten FIT-Dateien an und entferne alle eventuellen NULL-Werte.
-fit_list <- lapply(fit_files_filtered, fit2sf) %>% 
-  Filter(Negate(is.null), .)
-
-# Vereinige alle sf-Objekte zu einem einzigen und zeige sie an.
-fit_sf <- do.call(rbind, fit_list)
-
-
-
-
-
-
-# Datenrahmen erstellen für alle Aufzeichnungen
-coords_list <- lapply(records, function(record) {
-  if ("position_lat" %in% names(record) & "position_long" %in% names(record)) {
-    lat <- convert_to_degrees(record$position_lat)
-    long <- convert_to_degrees(record$position_long)
-    data.frame(latitude = lat, longitude = long)
-  } else {
-    NULL
+  # Überprüfe und entferne 'temperature' und 'heart_rate' Spalten, falls vorhanden
+  if (any(c("temperature", "heart_rate") %in% colnames(sf_data))) {
+    sf_data <- sf_data %>% select(-any_of(c("temperature", "heart_rate")))
   }
-})
+  
+  # Gib den verarbeiteten Datenframe zurück
+  return(sf_data)
+}, .progress = TRUE)
 
-coords_list <- coords_list[!sapply(coords_list, is.null)]
+# Leeren Dataframes entfernen
+combined_data_clean <- Filter(function(df) ncol(df) > 0, combined_data)
+combined_data_sf <- do.call(rbind, combined_data_clean)
+
+###############################################################################################
+# Laden das DataFrame mit den LV95-Koordinaten
+# Funzione per trasformare le coordinate in LV95
+transform_to_lv95 <- function(df) {
+  st_transform(df, crs = 2056)
+}
+
+# Trasforma tutti i data frame sf con geometrie di tipo POINT in coordinate LV95
+sf_data_points_lv95 <- lapply(combined_data_clean, transform_to_lv95)
+
+#eliminare # Unisci tutti i data frame trasformati in uno solo
+combined_data_sf_lv95 <- bind_rows(sf_data_points_lv95)
+
+# 1. Lade die Grenzen der Schweiz herunter und lade sie.
+swiss_boundary <- ne_countries(scale = "large", country = "Switzerland", returnclass = "sf")
+
+# 2. Transformiere die Grenzen der Schweiz gegebenenfalls in LV95
+swiss_boundary <- st_transform(swiss_boundary, crs = 2056)
+
+# 3. Filtrieren Geometrien ausserhalb der Grenzen der Schweiz
+filtered_data <- st_intersection(combined_data_sf_lv95, swiss_boundary)
+
+# 4. Wähle nur die gewünschten Spalten aus
+filtered_data <- filtered_data[, c("timestamp", "distance", "speed", "altitude", "geometry")]
+
+# Zeige die gefilterten Daten auf einer Karte an
+plot(filtered_data)
+tm_shape(filtered_data)  +tm_dots()
+
+# Zähle die Anzahl der Trainings-Tage
+filtered_data$timestamp <- as.POSIXct(filtered_data$timestamp)
+date_uniq <- unique(as.Date(filtered_data$timestamp))
+num_days <- length(date_uniq)
+print(num_days)
+#[1] 165
+
+########################################################################################
 
 
-# Konvertieren der Koordinaten in räumliche Objekte und transformieren
-coords_lv95_list <- lapply(coords_list, function(coords) {
-  coords_sf <- st_as_sf(coords, coords = c("longitude", "latitude"), crs = 4326) # WGS84
-  st_transform(coords_sf, crs = 2056) # LV95
-})
 
-# Alle Läufe in einen DataFrame zusammenführen
-coords_lv95_all <- do.call(rbind, lapply(seq_along(coords_lv95_list), function(i) {
-  coords_lv95_list[[i]]$run <- paste("Run", i)
-  coords_lv95_list[[i]]
-}))
-
-# Plotten der Läufe auf einer Karte
-ggplot() +
-  geom_sf(data = coords_lv95_all, aes(), size = 1) +
-  theme_minimal() +
-  labs(title = "erster Lauf",
-       x = "E",
-       y = "N",
-       color = "Lauf")
-
-library("tmap")
-
-tmap_mode("view")
-
-tm_shape(records) + 
-  tm_dots()
 
 ``` 
 
