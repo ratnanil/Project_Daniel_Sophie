@@ -45,6 +45,10 @@ if (!requireNamespace("tidyverse", quietly = TRUE)) {
   install.packages("tidyverse")
 }
 
+if (!requireNamespace("raster", quietly = TRUE)) {
+  install.packages("raster")
+}
+
 if (!requireNamespace("leaflet", quietly = TRUE)) {
   install.packages("leaflet")
 }
@@ -61,10 +65,13 @@ library(tmap)
 library(FITfileR)
 library(sf)
 library(ggplot2)
+library(raster)
 library(dplyr)
 library(readr)
 library(tidyverse)
 library(leaflet)
+
+
 
 #########################################################################################
 # Definire eine Funktion zum konvertieren FIT-Datensätze mit geografischen Koordinaten in ein `sf`-Format.
@@ -155,7 +162,7 @@ for (fit_file in files_to_remove) {
 fit_files <- list.files(path = "extracted_fit_files/", pattern = "\\.fit$", full.names = TRUE)
 
 
-combined_data <- map(fit_files[], function(file) {
+combined_data <- map(fit_files[1:16], function(file) {
   # Konvertiere FIT-Datei in ein Datenframe
   sf_data <- fit2sf(file)
   
@@ -165,7 +172,7 @@ combined_data <- map(fit_files[], function(file) {
   
   # Überprüfe und entferne 'temperature' und 'heart_rate' Spalten, falls vorhanden
   if (any(c("temperature", "heart_rate") %in% colnames(sf_data))) {
-    sf_data <- sf_data %>% select(-any_of(c("temperature", "heart_rate")))
+    sf_data <- sf_data %>% dplyr::select(-any_of(c("temperature", "heart_rate")))
   }
   
   # Gib den verarbeiteten Datenframe zurück
@@ -203,7 +210,7 @@ filtered_data <- filtered_data[, c("timestamp", "distance", "speed", "altitude",
 
 # Zeige die gefilterten Daten auf einer Karte an
 plot(filtered_data)
-tm_shape(filtered_data)  +tm_dots()
+tm_shape(filtered_data)  +tm_dots()+ tmap_mode("view")
 
 # Zähle die Anzahl der Trainings-Tage
 filtered_data$timestamp <- as.POSIXct(filtered_data$timestamp)
@@ -213,6 +220,68 @@ print(num_days)
 #[1] 165
 
 ########################################################################################
+#################################################
+# Hier versuche ich, die Höhe der Punkte zu überprüfen und gegebenenfalls zu korrigieren. Bisher ist es mir noch nicht gelungen.
+
+
+
+install.packages("elevatr")
+library(elevatr)
+
+
+install.packages("httr")
+library(httr)
+
+
+csv_file <- "swissalti.csv"
+swissalti_data <- read.csv(csv_file)
+
+# Visualizza le prime righe del dataframe per verificare
+head(swissalti_data)
+
+# Elimina la cartella tiff_files se esiste già
+if (file.exists("tiff_files")) {
+  unlink("tiff_files", recursive = TRUE)
+}
+
+# Crea la cartella tiff_files
+dir.create("tiff_files", showWarnings = FALSE, recursive = TRUE)
+
+# Loop attraverso gli URL nel dataframe
+for (i in 1:nrow(swissalti_data)) {
+  url <- swissalti_data[i, 1]  # Supponendo che la colonna con gli URL sia la prima
+  
+  # Estrarre il nome del file dal URL
+  filename <- basename(url)
+  
+  # Scaricare il file TIFF
+  GET(url, write_disk(paste0("tiff_files/", filename)))
+}
+
+# Lista dei file TIFF scaricati
+tiff_files <- list.files("tiff_files", full.names = TRUE)
+
+# Carica un (o tutti) singolo raster TIFF
+raster_data <- raster(tiff_files[3])
+
+# Esegui operazioni come calcolare statistiche, visualizzare il raster, ecc.
+print(raster_data)
+plot(raster_data)
+
+
+
+
+# Supponiamo che i file TIFF siano nella cartella "tiff_files"
+tiff_files <- list.files("tiff_files", full.names = TRUE)
+
+# Carica i raster TIFF
+raster_data <- lapply(tiff_files, raster)
+
+
+
+
+
+
 
 
 
