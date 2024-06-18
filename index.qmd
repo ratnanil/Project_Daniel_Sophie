@@ -161,8 +161,8 @@ for (fit_file in files_to_remove) {
 #Importiere alle FIT-Dateien in RStudio und erstelle eine Liste
 fit_files <- list.files(path = "extracted_fit_files/", pattern = "\\.fit$", full.names = TRUE)
 
-
-combined_data <- map(fit_files[1:16], function(file) {
+############# Es braucht 10-15 min ###############################################################
+combined_data <- map(fit_files[], function(file) {
   # Konvertiere FIT-Datei in ein Datenframe
   sf_data <- fit2sf(file)
   
@@ -221,61 +221,183 @@ print(num_days)
 
 ########################################################################################
 #################################################
-# Hier versuche ich, die Höhe der Punkte zu überprüfen und gegebenenfalls zu korrigieren. Bisher ist es mir noch nicht gelungen.
+# Fragenstellung 1
+# Importieren Sie die erforderlichen Bibliotheken
+library(dplyr)
+library(lubridate)
+library(ggplot2)
 
 
-
-install.packages("elevatr")
-library(elevatr)
-
-
-install.packages("httr")
-library(httr)
-
-
-csv_file <- "swissalti.csv"
-swissalti_data <- read.csv(csv_file)
-
-# Visualizza le prime righe del dataframe per verificare
-head(swissalti_data)
-
-# Elimina la cartella tiff_files se esiste già
-if (file.exists("tiff_files")) {
-  unlink("tiff_files", recursive = TRUE)
+# Funktion zur Berechnung der Zeitdifferenz in Sekunden
+difftime_secs <- function(x, y) {
+  as.numeric(difftime(x, y, units = "secs"))
 }
 
-# Crea la cartella tiff_files
-dir.create("tiff_files", showWarnings = FALSE, recursive = TRUE)
-
-# Loop attraverso gli URL nel dataframe
-for (i in 1:nrow(swissalti_data)) {
-  url <- swissalti_data[i, 1]  # Supponendo che la colonna con gli URL sia la prima
-  
-  # Estrarre il nome del file dal URL
-  filename <- basename(url)
-  
-  # Scaricare il file TIFF
-  GET(url, write_disk(paste0("tiff_files/", filename)))
+# Funktion zur Berechnung der Entfernung zwischen aufeinanderfolgenden Elementen
+distance_by_element <- function(later, now) {
+  as.numeric(st_distance(later, now, by_element = TRUE))
 }
 
-# Lista dei file TIFF scaricati
-tiff_files <- list.files("tiff_files", full.names = TRUE)
+# Funktion zur Berechnung der Steigung
+calculate_slope <- function(alt1, alt2, dist) {
+  (alt2 - alt1) / dist
+}
 
-# Carica un (o tutti) singolo raster TIFF
-raster_data <- raster(tiff_files[3])
-
-# Esegui operazioni come calcolare statistiche, visualizzare il raster, ecc.
-print(raster_data)
-plot(raster_data)
-
+# Daten nach aufsteigendem Zeitstempel sortieren 
+filtered_data <- filtered_data %>%
+  arrange(timestamp)
 
 
+# Initialisieren von cumulative_distance und run
+filtered_data$cumulative_distance <- 0
+filtered_data$run <- 1
 
-# Supponiamo che i file TIFF siano nella cartella "tiff_files"
-tiff_files <- list.files("tiff_files", full.names = TRUE)
+# Iterieren durch die Zeilen und Aktualisieren von cumulative_distance
+### Es braucht 1h oder 1.5 h ######################################
+# Der Abstand zwischen den Punkten weicht leicht von den von STRAVA importierten Abstandswerten ab. Der Grund dafür liegt wahrscheinlich in den unterschiedlichen Koordinatensystemen. Jetzt wird der Abstand mit dem LV95-System neu berechnet.
+for (i in 2:nrow(filtered_data)) {
+  if (difftime_secs(filtered_data$timestamp[i], filtered_data$timestamp[i-1]) > 1800) {
+    filtered_data$cumulative_distance[i] <- 0
+    filtered_data$run[i] <- filtered_data$run[i-1] + 1
+  } else {
+    filtered_data$cumulative_distance[i] <- filtered_data$cumulative_distance[i-1] + distance_by_element(filtered_data$geometry[i], filtered_data$geometry[i-1])
+    filtered_data$run[i] <- filtered_data$run[i-1]
+  }
+}
 
-# Carica i raster TIFF
-raster_data <- lapply(tiff_files, raster)
+# Spalten für Steplength, Höhenänderung und Steigungsprozent hinzufügen
+filtered_data <- filtered_data %>%
+  mutate(
+    next_geometry = lead(geometry),
+    next_altitude = lead(altitude),
+    steplength = distance_by_element(next_geometry, geometry),
+    altitude_change = next_altitude - altitude,
+    slope_percent = (altitude_change / steplength) * 100
+  ) %>%
+  filter(steplength != 0) # Doppelte Punkte bei Bedarf entfernen
+
+# Segmente von 300 Metern innerhalb jedes Laufs nummerieren
+filtered_data <- filtered_data %>%
+  group_by(run) %>%
+  mutate(
+    segment = floor(cumulative_distance / 300) + 1
+  ) %>%
+  ungroup()
+
+# Zeilen zusammenführen, die zum gleichen Lauf und Segment gehören, und die erforderlichen Metriken berechnen
+segment_summary <- filtered_data %>%
+  group_by(run, segment) %>%
+  summarize(
+    start_time = min(timestamp),
+    end_time = max(timestamp),
+    elapsed_time = difftime(max(timestamp), min(timestamp), units = "secs"),
+    start_distance = min(cumulative_distance),
+    end_distance = max(cumulative_distance),
+    segment_distance = max(cumulative_distance) - min(cumulative_distance),
+    mean_slope_percent = mean(slope_percent, na.rm = TRUE),
+    mean_speed = (as.numeric(elapsed_time) / 60) / (segment_distance / 1000) # Durchschnittsgeschwindigkeit in min/km
+  ) %>%
+  ungroup() %>%
+  filter(segment_distance >= 250) # Zeilen mit segment_distance >= 250 filtern
+
+# Spalte für Steigungskategorie hinzufügen
+segment_summary <- segment_summary %>%
+  mutate(
+    slope_category = case_when(
+      mean_slope_percent > 8 ~ "Steiler Anstieg",         # Größer als 8%
+      mean_slope_percent > 2 & mean_slope_percent <= 8 ~ "Sanfter Anstieg",   # Zwischen 2% und 8%
+      mean_slope_percent > -2 & mean_slope_percent <= 2 ~ "Flach",       # Zwischen -2% und +2%
+      mean_slope_percent < -8 ~ "Steiler Abstieg",       # Kleiner als -8%
+      mean_slope_percent < -2 & mean_slope_percent >= -8 ~ "Sanfter Abstieg"  # Zwischen -2% und -8%
+    )
+  )
+
+# Ergebnis anzeigen
+print(segment_summary)
+
+# Segmente entfernen, die nicht auf eine Laufaktivität zurückzuführen sind, Geschwindigkeit grösser als 15 min/km (sehr langsam, möglicherweise gab es Pausen durch Drücken der Stopp-Taste auf der Uhr).
+segment_summary_run <- segment_summary %>%
+  filter(mean_speed <= 15)
+
+# Erstellen des Boxplots
+library(ggplot2)
+
+ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed)) +
+  geom_boxplot(fill = "skyblue", color = "steelblue") +
+  labs(
+    title = "Geschwindigkeit über Steigungskategorien",
+    x = "Steigungskategorie",
+    y = "Durchschnittsgeschwindigkeit (min/km)"
+  ) +
+  theme_minimal()
+
+# Mediane, Standardabweichung, Gesamtanzahl der Segmente und durchschnittliche Steigungsprozente für jede Steigungskategorie berechnen
+# Mediane, Standardabweichung, Gesamtanzahl der Segmente und durchschnittliche Steigungsprozente für jede Steigungskategorie berechnen
+summary_stats <- segment_summary_run %>%
+  select(-geometry) %>%  # Spalte 'geometry' ausschließen
+  group_by(slope_category) %>%
+  summarize(
+    median = median(mean_speed),
+    standardabweichung = sd(mean_speed),
+    segmentanzahl = n(),  # Gesamtzahl der Segmente für diese Kategorie zählen
+    durchschnittliche_steigungsprozente = mean(mean_slope_percent, na.rm = TRUE)  # Durchschnittliche Steigungsprozente berechnen
+  ) %>%
+  ungroup()
+
+# Zusammenfassungstabelle anzeigen
+print(summary_stats)
+
+##################################################################################################
+# Fragenstellung 2
+# Berechnen der Gesamtanzahl der Segmente für jeden Lauf
+segment_summary_run <- segment_summary_run %>%
+  group_by(run) %>%
+  mutate(total_segments = max(segment)) %>%
+  ungroup()
+
+# Hinzufügen einer Spalte zur Identifizierung der Segmentphase
+segment_summary_run <- segment_summary_run %>%
+  mutate(
+    phase = case_when(
+      segment <= floor(total_segments / 3) ~ "Anfang",      # Erstes Drittel der Segmente
+      segment > floor(total_segments / 3) & 
+        segment <= 2 * floor(total_segments / 3) ~ "Mitte", # Zweites Drittel der Segmente
+      segment > 2 * floor(total_segments / 3) ~ "Ende"    # Letztes Drittel der Segmente
+    )
+  ) %>%
+  select(-total_segments)  # Entfernen der temporären Spalte total_segments
+
+# Nun enthält segment_summary_run eine neue Spalte 'phase', die anzeigt, ob sich jedes Segment am Anfang, in der Mitte oder am Ende des Trainings für jede Steigungskategorie (slope_category) befindet.
+
+library(ggplot2)
+
+# Plot der Geschwindigkeiten für Steigungskategorie und Segmentphase
+ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed, fill = phase)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Geschwindigkeit nach Steigungskategorie und Segmentphase",
+    x = "Steigungskategorie",
+    y = "Durchschnittsgeschwindigkeit (min/km)",
+    fill = "Segmentphase"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Drehen der Beschriftungen auf der x-Achse für eine bessere Lesbarkeit
+
+# Berechnen von Median, Standardabweichung, Gesamtanzahl der Segmente und durchschnittliche Steigungsprozente für jede Steigungskategorie in jeder Phase des Laufs
+summary_stats <- segment_summary_run %>%
+  group_by(slope_category, phase) %>%
+  summarize(
+    median = median(mean_speed, na.rm = TRUE),
+    standardabweichung = sd(mean_speed, na.rm = TRUE),
+    segmentanzahl = n(),  # Gesamtzahl der Segmente für diese Kombination aus Kategorie und Phase zählen
+    durchschnittliche_steigungsprozente = mean(mean_slope_percent, na.rm = TRUE)  # Durchschnittliche Steigungsprozente berechnen
+  ) %>%
+  ungroup()
+
+# Zusammenfassende Druckausgabe
+print(summary_stats)
+
+#################################################################################################
 
 
 
@@ -283,10 +405,6 @@ raster_data <- lapply(tiff_files, raster)
 
 
 
-
-
-
-``` 
 
 
 ## Abstract
