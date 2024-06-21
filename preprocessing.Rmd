@@ -1,3 +1,5 @@
+
+```{r}
 # Als erstes: Die Dateien sind im FIT Format: wir brauchen das Package FITfileR
 # Install and load necessary libraries
 if (!requireNamespace("rnaturalearth", quietly = TRUE)) {
@@ -381,4 +383,5 @@ summary_stats <- segment_summary_run %>%
 print(summary_stats)
 
 #################################################################################################
+```
 

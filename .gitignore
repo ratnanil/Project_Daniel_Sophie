@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+
+export/
+extracted_fit_files/
