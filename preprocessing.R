@@ -1,3 +1,7 @@
+knitr::spin("preprocessing.R")
+
+
+
 # Als erstes: Die Dateien sind im FIT Format: wir brauchen das Package FITfileR
 # Install and load necessary libraries
 if (!requireNamespace("rnaturalearth", quietly = TRUE)) {
@@ -305,7 +309,7 @@ segment_summary_run <- segment_summary %>%
 # Erstellen des Boxplots
 library(ggplot2)
 
-ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed)) +
+plot2 <- ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed)) +
   geom_boxplot(fill = "skyblue", color = "steelblue") +
   labs(
     title = "Geschwindigkeit über Steigungskategorien",
@@ -328,7 +332,7 @@ summary_stats <- segment_summary_run %>%
   ungroup()
 
 # Zusammenfassungstabelle anzeigen
-print(summary_stats)
+table1 <- print(summary_stats)
 
 ##################################################################################################
 # Fragenstellung 2
@@ -355,7 +359,7 @@ segment_summary_run <- segment_summary_run %>%
 library(ggplot2)
 
 # Plot der Geschwindigkeiten für Steigungskategorie und Segmentphase
-ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed, fill = phase)) +
+plot3 <- ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed, fill = phase)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(
     title = "Geschwindigkeit nach Steigungskategorie und Segmentphase",
@@ -378,7 +382,7 @@ summary_stats <- segment_summary_run %>%
   ungroup()
 
 # Zusammenfassende Druckausgabe
-print(summary_stats)
+table2 <- print(summary_stats)
 
 #################################################################################################
 
