@@ -320,7 +320,7 @@ plot2 <- ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed)) +
 
 # Mediane, Standardabweichung, Gesamtanzahl der Segmente und durchschnittliche Steigungsprozente für jede Steigungskategorie berechnen
 # Mediane, Standardabweichung, Gesamtanzahl der Segmente und durchschnittliche Steigungsprozente für jede Steigungskategorie berechnen
-summary_stats <- segment_summary_run %>%
+summary_stats1 <- segment_summary_run %>%
   select(-geometry) %>%  # Spalte 'geometry' ausschließen
   group_by(slope_category) %>%
   summarize(
@@ -332,7 +332,15 @@ summary_stats <- segment_summary_run %>%
   ungroup()
 
 # Zusammenfassungstabelle anzeigen
-table1 <- print(summary_stats)
+library(knitr)
+library(kableExtra)
+
+# Entferne die Spalte geometry und konvertiere sie in ein Data Frame
+table1 <- st_drop_geometry(summary_stats1)
+
+# Erstelle eine formatierte Tabelle
+table1 <- kable(table1, caption = "Zusammenfassung der Geschwindigkeit über Steigungskategorien") %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
 
 ##################################################################################################
 # Fragenstellung 2
@@ -371,7 +379,7 @@ plot3 <- ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed, fil
   theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Drehen der Beschriftungen auf der x-Achse für eine bessere Lesbarkeit
 
 # Berechnen von Median, Standardabweichung, Gesamtanzahl der Segmente und durchschnittliche Steigungsprozente für jede Steigungskategorie in jeder Phase des Laufs
-summary_stats <- segment_summary_run %>%
+summary_stats2 <- segment_summary_run %>%
   group_by(slope_category, phase) %>%
   summarize(
     median = median(mean_speed, na.rm = TRUE),
@@ -382,7 +390,12 @@ summary_stats <- segment_summary_run %>%
   ungroup()
 
 # Zusammenfassende Druckausgabe
-table2 <- print(summary_stats)
+# Entferne die Spalte geometry und konvertiere sie in ein Data Frame
+table2 <- st_drop_geometry(summary_stats2)
+
+# Erstelle eine formatierte Tabelle
+table2 <- kable(table2, caption = "Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase") %>%
+  kable_styling(bootstrap_options = "striped", full_width = F)
 
 #################################################################################################
 
