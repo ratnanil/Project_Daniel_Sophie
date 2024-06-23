@@ -12,14 +12,13 @@ lang: en  # switch to "de" if you write your report in german
 bibliography: bibliography.bib
 ---
 
-```{r preprocessing}
+
 #| code-summary: preprocessing
 
 ## Abstract
 
 ## Introduction
 
-@laube2011 investigate how temporal scale affects the calculation of movement parameters (speed, sinuosity and turning angle) of animal trajectories. 
 
 ## Material and Methods
 
@@ -37,7 +36,7 @@ plot2
 
 #| tbl-cap: "Zusammenfassung der Geschwindigkeit über Steigungskategorien"
 #| label: Geschwindigkeit-Steigungskategorie-summary
-table1
+knitr::kable(table1)
 
 
 #| fig-cap: "Geschwindigkeit nach Steigungskategorie und Segmentphase"
@@ -46,7 +45,7 @@ plot3
 
 #| tbl-cap: "Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase"
 #| label: Geschwindigkeit-Steigungskategorie-Segmentphase-summary
-table2
+knitr::kable(table2)
 
 ## Discussion
 
