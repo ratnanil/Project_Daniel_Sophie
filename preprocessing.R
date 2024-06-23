@@ -1,6 +1,3 @@
-knitr::spin("preprocessing.R")
-
-
 
 # Als erstes: Die Dateien sind im FIT Format: wir brauchen das Package FITfileR
 # Install and load necessary libraries
@@ -405,3 +402,5 @@ table2 <- st_drop_geometry(summary_stats2)
 table2 <- kable(table2, caption = "Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase") %>%
   kable_styling(bootstrap_options = "striped", full_width = F)
 
+
+source("preprocessing.R ")

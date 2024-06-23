@@ -3,5 +3,6 @@
 .RData
 .Ruserdata
 
+my_environment.RData
 export/
 extracted_fit_files/

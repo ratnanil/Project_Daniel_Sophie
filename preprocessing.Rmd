@@ -368,8 +368,17 @@ segment_summary_run <- segment_summary_run %>%
 
 library(ggplot2)
 
-# Plot der Geschwindigkeiten für Steigungskategorie und Segmentphase
-plot3 <- ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed, fill = phase)) +
+
+# Berechnung der Durchschnittsgeschwindigkeit für jede Kombination aus slope_category und phase
+segment_summary_run2 <- segment_summary_run %>%
+  group_by(slope_category, phase) %>%
+  summarize(
+    mean_speed = mean(mean_speed, na.rm = TRUE),
+    .groups = 'drop'  # Vermeiden der Warnung "summarize() ungrouping output"
+  )
+
+# Erstellen des Diagramms mit den Durchschnittsgeschwindigkeiten
+plot3 <- ggplot(segment_summary_run2, aes(x = slope_category, y = mean_speed, fill = phase)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(
     title = "Geschwindigkeit nach Steigungskategorie und Segmentphase",
@@ -380,25 +389,22 @@ plot3 <- ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed, fil
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Drehen der Beschriftungen auf der x-Achse für eine bessere Lesbarkeit
 
-# Berechnen von Median, Standardabweichung, Gesamtanzahl der Segmente und durchschnittliche Steigungsprozente für jede Steigungskategorie in jeder Phase des Laufs
+# Berechnung der Zusammenfassungsstatistiken
 summary_stats2 <- segment_summary_run %>%
   group_by(slope_category, phase) %>%
   summarize(
     median = median(mean_speed, na.rm = TRUE),
     standardabweichung = sd(mean_speed, na.rm = TRUE),
     segmentanzahl = n(),  # Gesamtzahl der Segmente für diese Kombination aus Kategorie und Phase zählen
-    durchschnittliche_steigungsprozente = mean(mean_slope_percent, na.rm = TRUE)  # Durchschnittliche Steigungsprozente berechnen
-  ) %>%
-  ungroup()
+    durchschnittliche_steigungsprozente = mean(mean_slope_percent, na.rm = TRUE),  # Durchschnittliche Steigungsprozente berechnen
+    .groups = 'drop'  # Vermeiden der Warnung "summarize() ungrouping output"
+  )
 
-# Zusammenfassende Druckausgabe
-# Entferne die Spalte geometry und konvertiere sie in ein Data Frame
+# Entfernen der Spalte geometry (falls vorhanden) und Umwandlung in ein Data Frame
 table2 <- st_drop_geometry(summary_stats2)
 
-# Erstelle eine formatierte Tabelle
+# Erstellen einer formatierten Tabelle
 table2 <- kable(table2, caption = "Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase") %>%
   kable_styling(bootstrap_options = "striped", full_width = F)
-
-#################################################################################################
 ```
 
