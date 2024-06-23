@@ -12,8 +12,10 @@ lang: en  # switch to "de" if you write your report in german
 bibliography: bibliography.bib
 ---
 
-
+```{r preprocessing}
 #| code-summary: preprocessing
+
+``` 
 
 ## Abstract
 
@@ -23,7 +25,7 @@ bibliography: bibliography.bib
 ## Material and Methods
 
 ## Results
-
+```{r preprocessing}
 #| fig-cap: "Darstellung der Lauftrainings in der Schweiz"
 #| label: fig-DarstellungCH
 plot(filtered_data)
@@ -46,6 +48,8 @@ plot3
 #| tbl-cap: "Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase"
 #| label: Geschwindigkeit-Steigungskategorie-Segmentphase-summary
 knitr::kable(table2)
+
+``` 
 
 ## Discussion
 
