@@ -384,6 +384,8 @@ plot3 <- ggplot(segment_summary_run2, aes(x = slope_category, y = mean_speed, fi
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Drehen der Beschriftungen auf der x-Achse für eine bessere Lesbarkeit
 
+plot3
+
 # Berechnung der Zusammenfassungsstatistiken
 summary_stats2 <- segment_summary_run %>%
   group_by(slope_category, phase) %>%
@@ -402,5 +404,6 @@ table2 <- st_drop_geometry(summary_stats2)
 table2 <- kable(table2, caption = "Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase") %>%
   kable_styling(bootstrap_options = "striped", full_width = F)
 
+save.image(file = "my_workspace.RData")
 
 source("preprocessing.R ")

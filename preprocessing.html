@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title></title>
+<style type="text/css">
+/**
+ * Prism.s theme ported from highlight.js's xcode style
+ */
+pre code {
+  padding: 1em;
+}
+.token.comment {
+  color: #007400;
+}
+.token.punctuation {
+  color: #999;
+}
+.token.tag,
+.token.selector {
+  color: #aa0d91;
+}
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+  color: #1c00cf;
+}
+.token.property,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin {
+  color: #c41a16;
+}
+.token.inserted {
+  background-color: #ccffd8;
+}
+.token.deleted {
+  background-color: #ffebe9;
+}
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #9a6e3a;
+}
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #836c28;
+}
+.token.function,
+.token.class-name {
+  color: #DD4A68;
+}
+.token.regex,
+.token.important,
+.token.variable {
+  color: #5c2699;
+}
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+.token.italic {
+  font-style: italic;
+}
+</style>
+<style type="text/css">
+body {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+body, .footnotes, code { font-size: .9em; }
+li li { font-size: .95em; }
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+pre, img { max-width: 100%; }
+pre, pre:hover {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+pre code {
+  display: block;
+  overflow-x: auto;
+}
+code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
+:not(pre) > code, code[class] { background-color: #F8F8F8; }
+code.language-undefined, pre > code:not([class]) {
+  background-color: inherit;
+  border: 1px solid #eee;
+}
+table {
+  margin: auto;
+  border-top: 1px solid #666;
+}
+table thead th { border-bottom: 1px solid #ddd; }
+th, td { padding: 5px; }
+thead, tfoot, tr:nth-child(even) { background: #eee; }
+blockquote {
+  color: #666;
+  margin: 0;
+  padding-left: 1em;
+  border-left: 0.5em solid #eee;
+}
+hr, .footnotes::before { border: 1px dashed #ddd; }
+.frontmatter { text-align: center; }
+#TOC .numbered li { list-style: none; }
+#TOC .numbered { padding-left: 0; }
+#TOC .numbered ul { padding-left: 1em; }
+table, .body h2 { border-bottom: 1px solid #666; }
+.body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
+.footnote-ref a::before { content: "["; }
+.footnote-ref a::after { content: "]"; }
+section.footnotes::before {
+  content: "";
+  display: block;
+  max-width: 20em;
+}
+
+@media print {
+  body {
+    font-size: 12pt;
+    max-width: 100%;
+  }
+  tr, img { page-break-inside: avoid; }
+}
+@media only screen and (min-width: 992px) {
+  pre { white-space: pre; }
+}
+</style>
+</head>
+<body>
+<div class="include-before">
+</div>
+<div class="frontmatter">
+<div class="title"><h1></h1></div>
+<div class="author"><h2></h2></div>
+<div class="date"><h3></h3></div>
+</div>
+<div class="body">
+<pre><code class="language-r"># Als erstes: Die Dateien sind im FIT Format: wir brauchen das Package FITfileR
+# Install and load necessary libraries
+if (!requireNamespace(&quot;rnaturalearth&quot;, quietly = TRUE)) {
+  install.packages(&quot;rnaturalearth&quot;)
+}
+
+if (!requireNamespace(&quot;tmap&quot;, quietly = TRUE)) {
+  install.packages(&quot;tmap&quot;)
+}
+
+if (!requireNamespace(&quot;sf&quot;, quietly = TRUE)) {
+  install.packages(&quot;sf&quot;)
+}
+
+if (!requireNamespace(&quot;ggplot2&quot;, quietly = TRUE)) {
+  install.packages(&quot;ggplot2&quot;)
+}
+
+if (!requireNamespace(&quot;dplyr&quot;, quietly = TRUE)) {
+  install.packages(&quot;dplyr&quot;)
+}
+
+if (!requireNamespace(&quot;readr&quot;, quietly = TRUE)) {
+  install.packages(&quot;readr&quot;)
+}
+
+if (!requireNamespace(&quot;tidyverse&quot;, quietly = TRUE)) {
+  install.packages(&quot;tidyverse&quot;)
+}
+
+if (!requireNamespace(&quot;raster&quot;, quietly = TRUE)) {
+  install.packages(&quot;raster&quot;)
+}
+
+if (!requireNamespace(&quot;leaflet&quot;, quietly = TRUE)) {
+  install.packages(&quot;leaflet&quot;)
+}
+
+if (!requireNamespace(&quot;FITfileR&quot;, quietly = TRUE)) {
+  if (!requireNamespace(&quot;remotes&quot;, quietly = TRUE)) {
+    install.packages(&quot;remotes&quot;)
+  }
+  remotes::install_github(&quot;grimbough/FITfileR&quot;)
+}
+
+library(rnaturalearth)
+library(tmap)
+library(FITfileR)
+library(sf)
+library(ggplot2)
+library(raster)
+library(dplyr)
+library(readr)
+library(tidyverse)
+library(leaflet)
+
+
+
+#########################################################################################
+# Definire eine Funktion zum konvertieren FIT-Datensätze mit geografischen Koordinaten in ein `sf`-Format.
+fit2sf &lt;- function(fit_path){
+  
+  fit_data &lt;- readFitFile(fit_path)
+  records &lt;- records(fit_data)
+  
+  
+  imap(records, function(x,y){
+    if (&quot;position_lat&quot; %in% names(x) &amp;&amp; &quot;position_long&quot; %in% names(x)) {
+      
+      st_as_sf(x, coords = c(&quot;position_long&quot;, &quot;position_lat&quot;), crs = 4326) |&gt; 
+        mutate(record = y)
+    } else {
+      NULL  # Gibt NULL zurück, wenn keine Koordinaten vorhanden sind
+    }
+  }) -&gt; all_records
+  
+  bind_rows(all_records)
+}
+
+# Funktion zum Extrahieren von .fit-Dateien aus .gz-Dateien
+extract_fit_from_gz &lt;- function(gz_file, output_dir = &quot;extracted_fit_files&quot;) {
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir)
+  }
+  
+  # Voller Pfad für die Extraktion erstellen
+  fit_file_path &lt;- file.path(output_dir, gsub(&quot;.gz$&quot;, &quot;.fit&quot;, basename(gz_file)))
+  
+  # Öffne die .gz-Datei und schreibe den Inhalt in eine .fit-Datei
+  con &lt;- gzfile(gz_file, &quot;rb&quot;)
+  fit_data &lt;- readBin(con, what = raw(), n = 1e6)
+  close(con)
+  
+  writeBin(fit_data, fit_file_path)
+  
+  return(fit_file_path)
+}
+
+# CSV-Datei mit Informationen zu Aktivitäten lesen
+activity_info &lt;- read_csv(&quot;export/activities.csv&quot;)
+</code></pre>
+<pre><code>## Error: 'export/activities.csv' does not exist in current working directory ('C:/Users/sophi/OneDrive/Dokumente/ZHAW/Pattern and Trends/Semesterproject/Project_Daniel_Sophie').
+</code></pre>
+<pre><code class="language-r"># Laufaktivitäten finden und ihre Dateinamen extrahieren
+running_activities &lt;- activity_info %&gt;%
+  filter(`Tipo attività` == &quot;Corsa&quot;) %&gt;%
+  pull(`Nome del file`)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'activity_info' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Unterordner im Verzeichnis &quot;export/activities&quot; finden
+sub_dirs &lt;- list.dirs(path = &quot;export/activities&quot;, full.names = TRUE, recursive = TRUE)
+
+# Alle .gz-Dateien in diesen Unterordnern finden
+gz_files &lt;- unlist(lapply(sub_dirs, function(dir) {
+  list.files(path = dir, pattern = &quot;\\.gz$&quot;, full.names = TRUE)
+}))
+
+# .fit-Dateien aus jeder .gz-Datei extrahieren
+fit_files &lt;- lapply(gz_files, extract_fit_from_gz)
+
+# Filtern der NULL-Dateien und sicherstellen, dass die Pfade Zeichenvektoren sind
+fit_files &lt;- unlist(fit_files[!sapply(fit_files, is.null)])
+
+# Dateinamen der vorhandenen .fit-Dateien im Verzeichnis &quot;extracted_fit_files&quot; finden
+existing_fit_names &lt;- list.files(path = &quot;extracted_fit_files&quot;, pattern = &quot;\\.fit$&quot;, full.names = TRUE)
+
+# Vollständige Pfade der Dateien relativ zum Verzeichnis &quot;extracted_fit_files&quot; erstellen
+existing_fit_paths &lt;- file.path(&quot;extracted_fit_files&quot;, basename(existing_fit_names))
+
+# Nur die Dateinamen der .fit-Dateien aus der Liste der vollständigen Pfade extrahieren und Pfad und Erweiterung entfernen
+existing_fit_names &lt;- tools::file_path_sans_ext(basename(existing_fit_paths))
+
+# Nur die Dateinamen der Laufaktivitäten extrahieren und Pfad und Erweiterung entfernen
+running_activity_names &lt;- tools::file_path_sans_ext(basename(running_activities))
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'running_activities' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Nur die .fit-Dateien behalten, die Laufaktivitäten entsprechen
+fit_files_to_keep &lt;- existing_fit_paths[existing_fit_names %in% running_activity_names]
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'running_activity_names' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Nicht benötigte .fit-Dateien im Verzeichnis &quot;extracted_fit_files&quot; entfernen
+files_to_remove &lt;- setdiff(existing_fit_paths, fit_files_to_keep)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'fit_files_to_keep' nicht gefunden
+</code></pre>
+<pre><code class="language-r">for (fit_file in files_to_remove) {
+  print(paste(&quot;Löschen der Datei:&quot;, fit_file))
+  file.remove(fit_file)
+}
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'files_to_remove' nicht gefunden
+</code></pre>
+<pre><code class="language-r">#################################################################################################
+#Importiere alle FIT-Dateien in RStudio und erstelle eine Liste
+fit_files &lt;- list.files(path = &quot;extracted_fit_files/&quot;, pattern = &quot;\\.fit$&quot;, full.names = TRUE)
+
+############# Es braucht 10-15 min ###############################################################
+combined_data &lt;- map(fit_files[], function(file) {
+  # Konvertiere FIT-Datei in ein Datenframe
+  sf_data &lt;- fit2sf(file)
+  
+  # Benenne Spalten um, wenn erforderlich
+  colnames(sf_data) &lt;- gsub(&quot;enhanced_speed&quot;, &quot;speed&quot;, colnames(sf_data))
+  colnames(sf_data) &lt;- gsub(&quot;enhanced_altitude&quot;, &quot;altitude&quot;, colnames(sf_data))
+  
+  # Überprüfe und entferne 'temperature' und 'heart_rate' Spalten, falls vorhanden
+  if (any(c(&quot;temperature&quot;, &quot;heart_rate&quot;) %in% colnames(sf_data))) {
+    sf_data &lt;- sf_data %&gt;% dplyr::select(-any_of(c(&quot;temperature&quot;, &quot;heart_rate&quot;)))
+  }
+  
+  # Gib den verarbeiteten Datenframe zurück
+  return(sf_data)
+}, .progress = TRUE)
+
+# Leeren Dataframes entfernen
+combined_data_clean &lt;- Filter(function(df) ncol(df) &gt; 0, combined_data)
+combined_data_sf &lt;- do.call(rbind, combined_data_clean)
+
+###############################################################################################
+# Laden das DataFrame mit den LV95-Koordinaten
+# Funzione per trasformare le coordinate in LV95
+transform_to_lv95 &lt;- function(df) {
+  st_transform(df, crs = 2056)
+}
+
+# Trasforma tutti i data frame sf con geometrie di tipo POINT in coordinate LV95
+sf_data_points_lv95 &lt;- lapply(combined_data_clean, transform_to_lv95)
+
+#eliminare # Unisci tutti i data frame trasformati in uno solo
+combined_data_sf_lv95 &lt;- bind_rows(sf_data_points_lv95)
+
+# 1. Lade die Grenzen der Schweiz herunter und lade sie.
+swiss_boundary &lt;- ne_countries(scale = &quot;large&quot;, country = &quot;Switzerland&quot;, returnclass = &quot;sf&quot;)
+
+# 2. Transformiere die Grenzen der Schweiz gegebenenfalls in LV95
+swiss_boundary &lt;- st_transform(swiss_boundary, crs = 2056)
+
+# 3. Filtrieren Geometrien ausserhalb der Grenzen der Schweiz
+filtered_data &lt;- st_intersection(combined_data_sf_lv95, swiss_boundary)
+</code></pre>
+<pre><code>## Error in UseMethod(&quot;st_intersection&quot;): nicht anwendbare Methode für 'st_intersection' auf Objekt der Klasse &quot;c('tbl_df', 'tbl', 'data.frame')&quot; angewendet
+</code></pre>
+<pre><code class="language-r"># 4. Wähle nur die gewünschten Spalten aus
+filtered_data &lt;- filtered_data[, c(&quot;timestamp&quot;, &quot;distance&quot;, &quot;speed&quot;, &quot;altitude&quot;, &quot;geometry&quot;)]
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Zeige die gefilterten Daten auf einer Karte an
+plot(filtered_data)
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): Fehler bei der Auswertung des Argumentes 'x' bei der Methodenauswahl für Funktion 'plot': Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r">tm_shape(filtered_data)  +tm_dots()+ tmap_mode(&quot;view&quot;)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Zähle die Anzahl der Trainings-Tage
+filtered_data$timestamp &lt;- as.POSIXct(filtered_data$timestamp)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r">date_uniq &lt;- unique(as.Date(filtered_data$timestamp))
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): Fehler bei der Auswertung des Argumentes 'x' bei der Methodenauswahl für Funktion 'unique': Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r">num_days &lt;- length(date_uniq)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'date_uniq' nicht gefunden
+</code></pre>
+<pre><code class="language-r">print(num_days)
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): Fehler bei der Auswertung des Argumentes 'x' bei der Methodenauswahl für Funktion 'print': Objekt 'num_days' nicht gefunden
+</code></pre>
+<pre><code class="language-r">#[1] 165
+
+########################################################################################
+#################################################
+# Fragenstellung 1
+# Importieren Sie die erforderlichen Bibliotheken
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+
+
+# Funktion zur Berechnung der Zeitdifferenz in Sekunden
+difftime_secs &lt;- function(x, y) {
+  as.numeric(difftime(x, y, units = &quot;secs&quot;))
+}
+
+# Funktion zur Berechnung der Entfernung zwischen aufeinanderfolgenden Elementen
+distance_by_element &lt;- function(later, now) {
+  as.numeric(st_distance(later, now, by_element = TRUE))
+}
+
+# Funktion zur Berechnung der Steigung
+calculate_slope &lt;- function(alt1, alt2, dist) {
+  (alt2 - alt1) / dist
+}
+
+# Daten nach aufsteigendem Zeitstempel sortieren 
+filtered_data &lt;- filtered_data %&gt;%
+  arrange(timestamp)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Initialisieren von cumulative_distance und run
+filtered_data$cumulative_distance &lt;- 0
+</code></pre>
+<pre><code>## Error: Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r">filtered_data$run &lt;- 1
+</code></pre>
+<pre><code>## Error: Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Iterieren durch die Zeilen und Aktualisieren von cumulative_distance
+### Es braucht 1h oder 1.5 h ######################################
+# Der Abstand zwischen den Punkten weicht leicht von den von STRAVA importierten Abstandswerten ab. Der Grund dafür liegt wahrscheinlich in den unterschiedlichen Koordinatensystemen. Jetzt wird der Abstand mit dem LV95-System neu berechnet.
+for (i in 2:nrow(filtered_data)) {
+  if (difftime_secs(filtered_data$timestamp[i], filtered_data$timestamp[i-1]) &gt; 1800) {
+    filtered_data$cumulative_distance[i] &lt;- 0
+    filtered_data$run[i] &lt;- filtered_data$run[i-1] + 1
+  } else {
+    filtered_data$cumulative_distance[i] &lt;- filtered_data$cumulative_distance[i-1] + distance_by_element(filtered_data$geometry[i], filtered_data$geometry[i-1])
+    filtered_data$run[i] &lt;- filtered_data$run[i-1]
+  }
+}
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): Fehler bei der Auswertung des Argumentes 'x' bei der Methodenauswahl für Funktion 'nrow': Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Spalten für Steplength, Höhenänderung und Steigungsprozent hinzufügen
+filtered_data &lt;- filtered_data %&gt;%
+  mutate(
+    next_geometry = lead(geometry),
+    next_altitude = lead(altitude),
+    steplength = distance_by_element(next_geometry, geometry),
+    altitude_change = next_altitude - altitude,
+    slope_percent = (altitude_change / steplength) * 100
+  ) %&gt;%
+  filter(steplength != 0) # Doppelte Punkte bei Bedarf entfernen
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Segmente von 300 Metern innerhalb jedes Laufs nummerieren
+filtered_data &lt;- filtered_data %&gt;%
+  group_by(run) %&gt;%
+  mutate(
+    segment = floor(cumulative_distance / 300) + 1
+  ) %&gt;%
+  ungroup()
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Zeilen zusammenführen, die zum gleichen Lauf und Segment gehören, und die erforderlichen Metriken berechnen
+segment_summary &lt;- filtered_data %&gt;%
+  group_by(run, segment) %&gt;%
+  summarize(
+    start_time = min(timestamp),
+    end_time = max(timestamp),
+    elapsed_time = difftime(max(timestamp), min(timestamp), units = &quot;secs&quot;),
+    start_distance = min(cumulative_distance),
+    end_distance = max(cumulative_distance),
+    segment_distance = max(cumulative_distance) - min(cumulative_distance),
+    mean_slope_percent = mean(slope_percent, na.rm = TRUE),
+    mean_speed = (as.numeric(elapsed_time) / 60) / (segment_distance / 1000) # Durchschnittsgeschwindigkeit in min/km
+  ) %&gt;%
+  ungroup() %&gt;%
+  filter(segment_distance &gt;= 250) # Zeilen mit segment_distance &gt;= 250 filtern
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'filtered_data' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Spalte für Steigungskategorie hinzufügen
+segment_summary &lt;- segment_summary %&gt;%
+  mutate(
+    slope_category = case_when(
+      mean_slope_percent &gt; 8 ~ &quot;Steiler Anstieg&quot;,         # Größer als 8%
+      mean_slope_percent &gt; 2 &amp; mean_slope_percent &lt;= 8 ~ &quot;Sanfter Anstieg&quot;,   # Zwischen 2% und 8%
+      mean_slope_percent &gt; -2 &amp; mean_slope_percent &lt;= 2 ~ &quot;Flach&quot;,       # Zwischen -2% und +2%
+      mean_slope_percent &lt; -8 ~ &quot;Steiler Abstieg&quot;,       # Kleiner als -8%
+      mean_slope_percent &lt; -2 &amp; mean_slope_percent &gt;= -8 ~ &quot;Sanfter Abstieg&quot;  # Zwischen -2% und -8%
+    )
+  )
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'segment_summary' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Ergebnis anzeigen
+print(segment_summary)
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): Fehler bei der Auswertung des Argumentes 'x' bei der Methodenauswahl für Funktion 'print': Objekt 'segment_summary' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Segmente entfernen, die nicht auf eine Laufaktivität zurückzuführen sind, Geschwindigkeit grösser als 15 min/km (sehr langsam, möglicherweise gab es Pausen durch Drücken der Stopp-Taste auf der Uhr).
+segment_summary_run &lt;- segment_summary %&gt;%
+  filter(mean_speed &lt;= 15)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'segment_summary' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Erstellen des Boxplots
+library(ggplot2)
+
+plot2 &lt;- ggplot(segment_summary_run, aes(x = slope_category, y = mean_speed)) +
+  geom_boxplot(fill = &quot;skyblue&quot;, color = &quot;steelblue&quot;) +
+  labs(
+    title = &quot;Geschwindigkeit über Steigungskategorien&quot;,
+    x = &quot;Steigungskategorie&quot;,
+    y = &quot;Durchschnittsgeschwindigkeit (min/km)&quot;
+  ) +
+  theme_minimal()
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'segment_summary_run' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Mediane, Standardabweichung, Gesamtanzahl der Segmente und durchschnittliche Steigungsprozente für jede Steigungskategorie berechnen
+# Mediane, Standardabweichung, Gesamtanzahl der Segmente und durchschnittliche Steigungsprozente für jede Steigungskategorie berechnen
+summary_stats1 &lt;- segment_summary_run %&gt;%
+  select(-geometry) %&gt;%  # Spalte 'geometry' ausschließen
+  group_by(slope_category) %&gt;%
+  summarize(
+    median = median(mean_speed),
+    standardabweichung = sd(mean_speed),
+    segmentanzahl = n(),  # Gesamtzahl der Segmente für diese Kategorie zählen
+    durchschnittliche_steigungsprozente = mean(mean_slope_percent, na.rm = TRUE)  # Durchschnittliche Steigungsprozente berechnen
+  ) %&gt;%
+  ungroup()
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'segment_summary_run' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Zusammenfassungstabelle anzeigen
+library(knitr)
+library(kableExtra)
+</code></pre>
+<pre><code>## Error in library(kableExtra): es gibt kein Paket namens 'kableExtra'
+</code></pre>
+<pre><code class="language-r"># Entferne die Spalte geometry und konvertiere sie in ein Data Frame
+table1 &lt;- st_drop_geometry(summary_stats1)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'summary_stats1' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Erstelle eine formatierte Tabelle
+table1 &lt;- kable(table1, caption = &quot;Zusammenfassung der Geschwindigkeit über Steigungskategorien&quot;) %&gt;%
+  kable_styling(bootstrap_options = &quot;striped&quot;, full_width = F)
+</code></pre>
+<pre><code>## Error in kable_styling(., bootstrap_options = &quot;striped&quot;, full_width = F): konnte Funktion &quot;kable_styling&quot; nicht finden
+</code></pre>
+<pre><code class="language-r">##################################################################################################
+# Fragenstellung 2
+# Berechnen der Gesamtanzahl der Segmente für jeden Lauf
+segment_summary_run &lt;- segment_summary_run %&gt;%
+  group_by(run) %&gt;%
+  mutate(total_segments = max(segment)) %&gt;%
+  ungroup()
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'segment_summary_run' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Hinzufügen einer Spalte zur Identifizierung der Segmentphase
+segment_summary_run &lt;- segment_summary_run %&gt;%
+  mutate(
+    phase = case_when(
+      segment &lt;= floor(total_segments / 3) ~ &quot;Anfang&quot;,      # Erstes Drittel der Segmente
+      segment &gt; floor(total_segments / 3) &amp; 
+        segment &lt;= 2 * floor(total_segments / 3) ~ &quot;Mitte&quot;, # Zweites Drittel der Segmente
+      segment &gt; 2 * floor(total_segments / 3) ~ &quot;Ende&quot;    # Letztes Drittel der Segmente
+    )
+  ) %&gt;%
+  select(-total_segments)  # Entfernen der temporären Spalte total_segments
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'segment_summary_run' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Nun enthält segment_summary_run eine neue Spalte 'phase', die anzeigt, ob sich jedes Segment am Anfang, in der Mitte oder am Ende des Trainings für jede Steigungskategorie (slope_category) befindet.
+
+library(ggplot2)
+
+
+# Berechnung der Durchschnittsgeschwindigkeit für jede Kombination aus slope_category und phase
+segment_summary_run2 &lt;- segment_summary_run %&gt;%
+  group_by(slope_category, phase) %&gt;%
+  summarize(
+    mean_speed = mean(mean_speed, na.rm = TRUE),
+    .groups = 'drop'  # Vermeiden der Warnung &quot;summarize() ungrouping output&quot;
+  )
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'segment_summary_run' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Erstellen des Diagramms mit den Durchschnittsgeschwindigkeiten
+plot3 &lt;- ggplot(segment_summary_run2, aes(x = slope_category, y = mean_speed, fill = phase)) +
+  geom_bar(stat = &quot;identity&quot;, position = &quot;dodge&quot;) +
+  labs(
+    title = &quot;Geschwindigkeit nach Steigungskategorie und Segmentphase&quot;,
+    x = &quot;Steigungskategorie&quot;,
+    y = &quot;Durchschnittsgeschwindigkeit (min/km)&quot;,
+    fill = &quot;Segmentphase&quot;
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Drehen der Beschriftungen auf der x-Achse für eine bessere Lesbarkeit
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'segment_summary_run2' nicht gefunden
+</code></pre>
+<pre><code class="language-r">plot3
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'plot3' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Berechnung der Zusammenfassungsstatistiken
+summary_stats2 &lt;- segment_summary_run %&gt;%
+  group_by(slope_category, phase) %&gt;%
+  summarize(
+    median = median(mean_speed, na.rm = TRUE),
+    standardabweichung = sd(mean_speed, na.rm = TRUE),
+    segmentanzahl = n(),  # Gesamtzahl der Segmente für diese Kombination aus Kategorie und Phase zählen
+    durchschnittliche_steigungsprozente = mean(mean_slope_percent, na.rm = TRUE),  # Durchschnittliche Steigungsprozente berechnen
+    .groups = 'drop'  # Vermeiden der Warnung &quot;summarize() ungrouping output&quot;
+  )
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'segment_summary_run' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Entfernen der Spalte geometry (falls vorhanden) und Umwandlung in ein Data Frame
+table2 &lt;- st_drop_geometry(summary_stats2)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): Objekt 'summary_stats2' nicht gefunden
+</code></pre>
+<pre><code class="language-r"># Erstellen einer formatierten Tabelle
+table2 &lt;- kable(table2, caption = &quot;Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase&quot;) %&gt;%
+  kable_styling(bootstrap_options = &quot;striped&quot;, full_width = F)
+</code></pre>
+<pre><code>## Error in kable_styling(., bootstrap_options = &quot;striped&quot;, full_width = F): konnte Funktion &quot;kable_styling&quot; nicht finden
+</code></pre>
+<pre><code class="language-r">save.image(file = &quot;my_workspace.RData&quot;)
+
+source(&quot;preprocessing.R &quot;)
+</code></pre>
+<pre><code>## Error: 'export/activities.csv' does not exist in current working directory ('C:/Users/sophi/OneDrive/Dokumente/ZHAW/Pattern and Trends/Semesterproject/Project_Daniel_Sophie').
+</code></pre>
+</div>
+<div class="include-after">
+</div>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</body>
+</html>
