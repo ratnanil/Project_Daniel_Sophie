@@ -1,4 +1,4 @@
-
+load("myenviron.RData")
 # Als erstes: Die Dateien sind im FIT Format: wir brauchen das Package FITfileR
 # Install and load necessary libraries
 if (!requireNamespace("rnaturalearth", quietly = TRUE)) {
@@ -97,8 +97,9 @@ extract_fit_from_gz <- function(gz_file, output_dir = "extracted_fit_files") {
   return(fit_file_path)
 }
 
+
 # CSV-Datei mit Informationen zu Aktivitäten lesen
-activity_info <- read_csv("export/activities.csv")
+activity_info <- read_csv("activities.csv")
 
 # Laufaktivitäten finden und ihre Dateinamen extrahieren
 running_activities <- activity_info %>%
@@ -106,7 +107,7 @@ running_activities <- activity_info %>%
   pull(`Nome del file`)
 
 # Unterordner im Verzeichnis "export/activities" finden
-sub_dirs <- list.dirs(path = "export/activities", full.names = TRUE, recursive = TRUE)
+sub_dirs <- list.dirs(path = "activities", full.names = TRUE, recursive = TRUE)
 
 # Alle .gz-Dateien in diesen Unterordnern finden
 gz_files <- unlist(lapply(sub_dirs, function(dir) {
@@ -404,6 +405,4 @@ table2 <- st_drop_geometry(summary_stats2)
 table2 <- kable(table2, caption = "Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase") %>%
   kable_styling(bootstrap_options = "striped", full_width = F)
 
-save.image(file = "my_workspace.RData")
-
-source("preprocessing.R ")
+save.image(file = "meine_Umgebung.RData")
