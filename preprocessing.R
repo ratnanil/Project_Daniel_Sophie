@@ -1,4 +1,4 @@
-load("myenviron.RData")
+# load("myenviron.RData")
 # Als erstes: Die Dateien sind im FIT Format: wir brauchen das Package FITfileR
 # Install and load necessary libraries
 if (!requireNamespace("rnaturalearth", quietly = TRUE)) {
@@ -195,7 +195,7 @@ filtered_data <- filtered_data[, c("timestamp", "distance", "speed", "altitude",
 
 # Zeige die gefilterten Daten auf einer Karte an
 plot(filtered_data)
-tm_shape(filtered_data)  +tm_dots()+ tmap_mode("view")
+# tm_shape(filtered_data)  +tm_dots()+ tmap_mode("view")
 
 # Zähle die Anzahl der Trainings-Tage
 filtered_data$timestamp <- as.POSIXct(filtered_data$timestamp)
@@ -241,6 +241,7 @@ filtered_data$run <- 1
 ### Es braucht 1h oder 1.5 h ######################################
 # Der Abstand zwischen den Punkten weicht leicht von den von STRAVA importierten Abstandswerten ab. Der Grund dafür liegt wahrscheinlich in den unterschiedlichen Koordinatensystemen. Jetzt wird der Abstand mit dem LV95-System neu berechnet.
 for (i in 2:nrow(filtered_data)) {
+  print(i/nrow(filtered_data))
   if (difftime_secs(filtered_data$timestamp[i], filtered_data$timestamp[i-1]) > 1800) {
     filtered_data$cumulative_distance[i] <- 0
     filtered_data$run[i] <- filtered_data$run[i-1] + 1
@@ -249,6 +250,25 @@ for (i in 2:nrow(filtered_data)) {
     filtered_data$run[i] <- filtered_data$run[i-1]
   }
 }
+
+rle_id <- function(vec) {
+  x <- rle(vec)$lengths
+  as.factor(rep(seq_along(x), times = x))
+}
+
+filtered_data <- filtered_data |> 
+  mutate(
+    timediff = difftime_secs(lead(timestamp), timestamp),
+    timediff_large = timediff > 1800,
+    run_id = rle_id(timediff_large)
+  ) |> 
+  group_by(run_id) |> 
+  mutate(
+    distance = distance_by_element(lead(geometry), geometry),
+    cumulative_distance = cumsum(distance)
+  )
+
+
 
 # Spalten für Steplength, Höhenänderung und Steigungsprozent hinzufügen
 filtered_data <- filtered_data %>%
@@ -406,3 +426,4 @@ table2 <- kable(table2, caption = "Zusammenfassung der Geschwindigkeit nach Stei
   kable_styling(bootstrap_options = "striped", full_width = F)
 
 save.image(file = "meine_Umgebung.RData")
+save.image(file = "my_workspace.RData")

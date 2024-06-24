@@ -16,8 +16,9 @@ bibliography: bibliography.bib
 #| code-summary: preprocessing
 
 load(file = "my_workspace.RData")
-
+library(tmap)
 ```
+
 
 ## Abstract
 
@@ -74,11 +75,17 @@ Using the metadata file, we filter all the activities to find the filenames of t
 
 Next, we imported the .fit files into RStudio. To work with relevant information for our spatial analysis such as the coordinates, we then transformed .fit files into sf objects. To make the data frames tidy, we then harmonized the column names and deleted unnecessary columns some files had. The coordinates of the now tidy data frames must then be further transformed into the LV95 coordinate system. Since we only want to analyse runs that took place in Switzerland, we use the spatial intersection function to exclude any geometries that fall outside the country's boundaries. This results in having a filtered data frame consisting of point features in the CH03/LV95 coordinate system with columns timestamp, distance, speed and altitude (see @Plot1).
 
-```{r preprocessing}
+```{r}
 #| fig-cap: "Dieser Plot zeigt alle 165 Runs an von 2016 - 2018 in der Schweiz"
 #| label: Plot1
-plot(filtered_data)
-tm_shape(filtered_data)  +tm_dots()+ tmap_mode("View")
+
+library(rnaturalearth)
+tmap_mode("plot")
+
+ch <- rnaturalearth::ne_countries(scale = 50, country = "Switzerland")
+
+tm_shape(ch) + tm_polygons() +
+tm_shape(filtered_data)  +tm_dots()
 ```
 
 #### Segmentation
@@ -99,11 +106,13 @@ We wanted to analyse how the slope affects the running speed in Daniel’s runs.
 
 Daniel reached the highest speed on flat (median = 4.70 min/km, SD: +/- 1.14 min/km) and gentle descent sections (median = 4.73 min/km, SD: +/- 1.12 min/km) in his runs. Running speed was reduced in gentle ascents (median = 5.33 min/km, SD: +/- 1.67 min/km) and steep descents (median = 5.56 min/km, SD: +/- 2.34 min/km). The lowest running speed was measured for steep ascents (median = 6.92 min/km, SD: +/- 2.90 min/km). The data shows a high standard deviation for all slope categories, indicating inconsistent average speeds in different section and different runs overall.
 
-```{r preprocessing}
+```{r}
 #| fig-cap: "Geschwindigkeit über Steigungskategorien"
 #| label: Plot2
 plot2
+```
 
+```{r}
 #| tbl-cap: "Zusammenfassung der Geschwindigkeit über Steigungskategorien"
 #| label: Tabelle 1 Geschwindigkeit-Steigungskategorie-summary
 table1
@@ -113,10 +122,12 @@ To investigate how the running speed varies between different stages of Daniel�
 
 For the analysis of this project we used Rstudio (Posit team, 2023). To generate the code, we followed either the exercises we did in class of the module ‘pattern and trends’, came up with own ideas, asks our friends from class and Nils, or used ChatGPT as a source (OpenAI, 2024).
 
-```{r preprocessing}
+```{r}
 #| fig-cap: "Geschwindigkeit nach Steigungskategorie und Segmentphase"
 #| label: Plot3
+```
 
+```{r}
 #| tbl-cap: "Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase"
 #| label: Tabelle 2 Geschwindigkeit-Steigungskategorie-Segmentphase-summary
 table2
