@@ -2,13 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.554">
+<meta name="generator" content="quarto-1.5.30">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Firstname1 Lastname1 and Firstname2 Lastname2">
+<meta name="author" content="Sophie Blatter and Daniel Cellerino">
 
-<title>The title of your Semesterproject</title>
+<title>Identification of running workout patterns on different terrain slope classes.</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -34,7 +34,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -80,8 +80,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">The title of your Semesterproject</h1>
-<p class="subtitle lead">A subtle subtitle</p>
+<h1 class="title">Identification of running workout patterns on different terrain slope classes.</h1>
+<p class="subtitle lead">Performance during training phases on various terrain slopes.</p>
 </div>
 
 
@@ -91,7 +91,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Firstname1 Lastname1 and Firstname2 Lastname2 </p>
+             <p>Sophie Blatter and Daniel Cellerino </p>
           </div>
   </div>
     
@@ -104,39 +104,345 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<div class="cell">
+<details class="code-fold">
+<summary>preprocessing</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="st">"my_workspace.RData"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tmap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <section id="abstract" class="level2">
 <h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p>To improve running performance, technology is advancing, providing athletes with tools to optimize their training. This study focuses on analysing GPS data from 165 running sessions recorded by Daniel from 2016 to 2023 using a Garmin sport watch.</p>
+<p>Our objective was to identify patterns in Daniel’s running behaviour with a focus on different slope gradients and the phases of the training session (beginning, middle, or end). The derived goal was to provide insights for performance improvement. The runs were categorized based on slope into five classes: flat, gentle descent, gentle ascent, steep descent, and steep ascent. Each run was divided into 300-meter segments, and speeds were analysed for these segments.</p>
+<p>Results show that Daniel’s highest speeds were on flat and gently descending terrain, while his lowest speeds were on steep ascents. Variability in speed was highest in challenging terrains, suggesting inconsistent pacing behaviour. Additionally, we observed that Daniel typically starts his runs at a faster pace, which declines in later stages, except in steeply ascending sections where his speed increases towards the end. This indicates that Daniel could benefit from better pacing, especially in less challenging terrain in the initial stages of his runs, to maintain a more consistent speed throughout.</p>
+<p>The study highlights the importance of targeted pacing strategies to enhance overall running performance. Future analyses could further differentiate between regular runs and interval or sprint workouts to refine training recommendations.</p>
 </section>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Running is a popular sport that many people in Switzerland engage in for physical fitness and balance. The proportion of people who jog has significantly increased for both men and women since 2014, and in 2020, 10,0% of the population identified jogging as their main sport. (Bürgi et al., 2021). To improve running performance, whether for an upcoming race or personal goals, it is crucial to understand one’s strengths and weaknesses in running behaviour. This understanding allows for targeted training adjustments and enabling runners to optimize their performance. Positional and temporal movement patterns can be assessed using global positioning system (GPS) units.</p>
+<p>In sports, GPS devices are increasingly used to gain insights into movement patterns and detect subtle differences in sport performance (Hodun et al., 2016). GPS sport watches have become an accurate tool for tracking GPS locations (Johansson et al., 2020). For example, GPS data has been used to analyse speed, acceleration, and exertion index in rugby players, providing a better understanding of the requirements of different positions (Jones et al., 2015). Analysing recorded training data has also proven to be useful for runners. For instance a study of marathon finishers showed that a training regime consisting of many long sessions at low intensities and an overall high volume positively impacted the finishing time (Zrenner et al., 2021).</p>
+<p>Such analyses underline that calculating movement parameters such as speed or distance of trajectories can provide useful information that can be implemented in training to improve performance and elicit specific adaptations.</p>
+<p>In this project, we analysed running trajectories of Daniel from the years 2016 to 2021. He recorded a total of 165 running sessions on his Garmin watch with STRAVA. Our objective was to identify patterns in his running behaviour. The GPS data is used to derive information on velocity, providing detailed insights into his performance. First, we defined five categories based on the slope of the terrain. Those categories are:</p>
+<ul>
+<li><p>Flat: from -2% to +2%</p></li>
+<li><p>Gentle Descent: from -2% to -8%</p></li>
+<li><p>Gentle Ascent: from 2% to 8%</p></li>
+<li><p>Steep Descent: less than -8%</p></li>
+<li><p>Steep Ascent: more than +8%</p></li>
+</ul>
+<p>The runs were then divided into 300-meter segments, and each segment was assigned to a category. The scale of segmentation is sensitive and influences the interpretation of the results. Deciding the appropriate degree of granularity is crucial and must be considered when interpreting the results (Laube &amp; Purves, 2011).</p>
+</section>
+<section id="research-questions" class="level2">
+<h2 class="anchored" data-anchor-id="research-questions">Research questions</h2>
+<p>In this project we will address these following research questions:</p>
+<ul>
+<li>What patterns exist among the 5 slope classes in Daniel’s running behaviour?</li>
+<li>Is there a difference in speed between the beginning, the middle and the end stage of the run in the different slope categories?</li>
+<li>If time left: Are there differences in speed within the different classes in the first 2 years of his training (2016-2017) compared with runs from the later years (2022 and 2023)? In which classes is he getting faster/slower?</li>
+</ul>
+<p>We then further want to investigate how he could improve his running based on our findings. #Data and Methods</p>
 </section>
 <section id="material-and-methods" class="level2">
 <h2 class="anchored" data-anchor-id="material-and-methods">Material and Methods</h2>
+<section id="datasets" class="level3">
+<h3 class="anchored" data-anchor-id="datasets">Datasets</h3>
+<p>For this project, we utilized the movement trajectories tracked by Daniel during his running sessions. The GPS devise he used was a GARMIN forerunner 245 sport watch. In total he recorded 165 running sessions from the years 2016-2023. Our analysis focused exclusively on the runs he completed in Switzerland. The GPS point features, along with additional information such as altitude and distance are stored in a .FIT file (vector). Daniel’s runs were recorded using the “smart recording” setting, which results in an irregular recording interval. This setting typically records more frequently during non-linear movements and less frequently during linear and regular movements. The sampling rate varies between 1 and 10 seconds. To exclude runs that were not in Switzerland we used the ‘rnaturalearth’ package (Massicotte &amp; South, 2023).</p>
 </section>
-<section id="results" class="level2">
-<h2 class="anchored" data-anchor-id="results">Results</h2>
-<p>#| fig-cap: “Darstellung der Lauftrainings in der Schweiz” #| label: fig-DarstellungCH plot(filtered_data) tm_shape(filtered_data) +tm_dots()+ tmap_mode(“View”)</p>
-<p>#| fig-cap: “Geschwindigkeit über Steigungskategorien” #| label: fig-Geschwindigkeit über Steigungskategorien plot2</p>
-<p>#| tbl-cap: “Zusammenfassung der Geschwindigkeit über Steigungskategorien” #| label: Geschwindigkeit-Steigungskategorie-summary knitr::kable(table1)</p>
-<p>#| fig-cap: “Geschwindigkeit nach Steigungskategorie und Segmentphase” #| label: fig-Geschwindigkeit nach Steigungskategorie und Segmentphase plot3</p>
-<p>#| tbl-cap: “Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase” #| label: Geschwindigkeit-Steigungskategorie-Segmentphase-summary knitr::kable(table2)</p>
-</section>
-<section id="discussion" class="level2">
-<h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
-</section>
-<section id="appendix" class="level2">
-<h2 class="anchored" data-anchor-id="appendix">Appendix</h2>
-<section id="wordcount" class="level3">
-<h3 class="anchored" data-anchor-id="wordcount">Wordcount</h3>
-<!-- after installing the wordcountadding, remove the line "#| eval: false" -->
+<section id="methods" class="level3">
+<h3 class="anchored" data-anchor-id="methods">Methods</h3>
+<p>To ensure the GPS fixes are usable for our R analysis, substantial preprocessing work is required. First, we need to extract the .fit files from the compressed .gz archives. To do so, we create a function that reads the .gz file and writes it to a .fit file in the previously specified output directory.<br>
+Using the metadata file, we filter all the activities to find the filenames of the running activities only. This allows us to then filter and match the file names with the extracted .fit files. If they corresponded, we kept them, otherwise we deleted them.</p>
+<p>Next, we imported the .fit files into RStudio. To work with relevant information for our spatial analysis such as the coordinates, we then transformed .fit files into sf objects. To make the data frames tidy, we then harmonized the column names and deleted unnecessary columns some files had. The coordinates of the now tidy data frames must then be further transformed into the LV95 coordinate system. Since we only want to analyse runs that took place in Switzerland, we use the spatial intersection function to exclude any geometries that fall outside the country’s boundaries. This results in having a filtered data frame consisting of point features in the CH03/LV95 coordinate system with columns timestamp, distance, speed and altitude (see <span class="citation" data-cites="Plot1">(<a href="#ref-Plot1" role="doc-biblioref"><strong>Plot1?</strong></a>)</span>).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("pacman") </span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">p_install_gh</span>(<span class="st">"benmarwick/wordcountaddin"</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"pacman"</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>wordcountaddin<span class="sc">::</span><span class="fu">word_count</span>(<span class="st">"index.qmd"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(filtered_data)  <span class="sc">+</span><span class="fu">tm_dots</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/Plot1-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Dieser Plot zeigt alle 165 Runs an von 2016 - 2018 in der Schweiz</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<section id="segmentation" class="level4">
+<h4 class="anchored" data-anchor-id="segmentation">Segmentation</h4>
+<p>The segmentation of the running sessions was done by dividing them into approximately 300-meter intervals starting from the initial point. The maximum distance for each segment is 300 meters, while a minimum threshold of 250 meters was set. This excluded most of the final segments of the runs from the analysis, which are often much shorter than 300 meters and could distort the results.</p>
+</section>
+<section id="slope" class="level4">
+<h4 class="anchored" data-anchor-id="slope">Slope</h4>
+<p>The slope is calculated by the change of two consecutive altitudes over a given distance. Altitudes are recorded with the GPS watch. The slope in percent is calculated by the altitude change divided by the step length times 100. Next, the segments were pooled into the five different slope categories based on their slope percentage.</p>
+</section>
+<section id="speed" class="level4">
+<h4 class="anchored" data-anchor-id="speed">Speed</h4>
+<p>For calculation of the mean speed for each segment, we need two measurements: the time elapsed and the distance covered. First, we calculated the time lag in seconds between the beginning and the end of a measured segment. We then divided the elapsed time by the length of the segment (250-300 m). Mean running speeds that were slower than 15 min/km were excluded, since they do not reflect normal running speed and may be introduced through a stop in the recording of the watch.</p>
+</section>
+</section>
+</section>
+<section id="results" class="level2">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<p>We wanted to analyse how the slope affects the running speed in Daniel’s runs. In order to do so, we plotted the average speed over 300m segments categorized into five slope categories (see <span class="citation" data-cites="Plot2">(<a href="#ref-Plot2" role="doc-biblioref"><strong>Plot2?</strong></a>)</span>). The number of segments within each category are as follows: flat: 421, gentle descent: 269, gentle ascent: 261, steep descent: 121, steep ascent: 100.</p>
+<p>Daniel reached the highest speed on flat (median = 4.70 min/km, SD: +/- 1.14 min/km) and gentle descent sections (median = 4.73 min/km, SD: +/- 1.12 min/km) in his runs. Running speed was reduced in gentle ascents (median = 5.33 min/km, SD: +/- 1.67 min/km) and steep descents (median = 5.56 min/km, SD: +/- 2.34 min/km). The lowest running speed was measured for steep ascents (median = 6.92 min/km, SD: +/- 2.90 min/km). The data shows a high standard deviation for all slope categories, indicating inconsistent average speeds in different section and different runs overall.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>plot2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/Plot2-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Geschwindigkeit über Steigungskategorien</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>table1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<table class="table table-striped table-sm small" data-quarto-postprocess="true">
+<caption>Zusammenfassung der Geschwindigkeit über Steigungskategorien</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">slope_category</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">median</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">standardabweichung</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">segmentanzahl</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">durchschnittliche_steigungsprozente</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Flach</td>
+<td style="text-align: right;">4.798956</td>
+<td style="text-align: right;">1.153950</td>
+<td style="text-align: right;">206</td>
+<td style="text-align: right;">0.0496802</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sanfter Abstieg</td>
+<td style="text-align: right;">4.929323</td>
+<td style="text-align: right;">1.467206</td>
+<td style="text-align: right;">128</td>
+<td style="text-align: right;">-4.3148707</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sanfter Anstieg</td>
+<td style="text-align: right;">5.716357</td>
+<td style="text-align: right;">1.701781</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">4.3396612</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Steiler Abstieg</td>
+<td style="text-align: right;">6.401274</td>
+<td style="text-align: right;">2.425968</td>
+<td style="text-align: right;">49</td>
+<td style="text-align: right;">-20.5616710</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Steiler Anstieg</td>
+<td style="text-align: right;">7.636627</td>
+<td style="text-align: right;">2.953572</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">15.0438051</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+<p>To investigate how the running speed varies between different stages of Daniel’s run we plotted the median speed for the first third, the second third and the last third of the total segments (see <span class="citation" data-cites="Plot3">(<a href="#ref-Plot3" role="doc-biblioref"><strong>Plot3?</strong></a>)</span>). To account for the role of different slopes in those sections, speeds are shown for the different slope categories defined above. For all slope categories except steep ascents, Daniel ran the initial third (flat: 4.52 min/km, SD: +/- 0.98min/km, gentle descent: 4.40 min/km, SD: +/- 0.85 min/km, steep descent: 4.77 min/km, SD: +/- 1.25 min/km, gentle ascent: 5.07 min/km, SD: +/- 1.39 min/km) always at a higher speed than the middle and the final third. Subsequently, the middle third (flat: 4.80 min/km, SD: +/- 0.99 min/km, gentle descent: 4.69 min/km, SD: +/- 0.52 min/km, steep descent: 5.06 min/km, SD: +/- 2.54 min/km, gentle ascent: 5.39 min/km, SD: +/- 1.60 min/km) and the final third (flat: 4.81 min/km, SD: +/- 1.36 min/km, gentle descent: 5.09 min/km, SD: +/- 1.42 min/km, steep descent: 6.08 min/km, SD: +/- 2.46 min/km, gentle ascent: 5.50 min/km, SD: +/- 1.90 min/km) of his runs were absolved at a very similar speed. For steep ascents, Daniel ran the initial third (6.76 min/km, SD: +/- 3.53 min/km) and the middle third (7.26 min/km, SD: +/- 2.05 min/km) at very similar speed, but the measured speed increased considerably in the final third (6.21 min/km, SD: +/- 3.39 min/km) of his runs.</p>
+<p>For the analysis of this project we used Rstudio (Posit team, 2023). To generate the code, we followed either the exercises we did in class of the module ‘pattern and trends’, came up with own ideas, asks our friends from class and Nils, or used ChatGPT as a source (OpenAI, 2024).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>table2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<table class="table table-striped table-sm small" data-quarto-postprocess="true">
+<caption>Zusammenfassung der Geschwindigkeit nach Steigungskategorie und Segmentphase</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">slope_category</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">phase</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">median</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">standardabweichung</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">segmentanzahl</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">durchschnittliche_steigungsprozente</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Flach</td>
+<td style="text-align: left;">Anfang</td>
+<td style="text-align: right;">4.506769</td>
+<td style="text-align: right;">0.7806439</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">0.1967163</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Flach</td>
+<td style="text-align: left;">Ende</td>
+<td style="text-align: right;">5.004469</td>
+<td style="text-align: right;">1.3814085</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">-0.0610159</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Flach</td>
+<td style="text-align: left;">Mitte</td>
+<td style="text-align: right;">4.866751</td>
+<td style="text-align: right;">1.0994441</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">0.0106964</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sanfter Abstieg</td>
+<td style="text-align: left;">Anfang</td>
+<td style="text-align: right;">4.556416</td>
+<td style="text-align: right;">1.0541033</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">-3.9475666</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sanfter Abstieg</td>
+<td style="text-align: left;">Ende</td>
+<td style="text-align: right;">5.382510</td>
+<td style="text-align: right;">1.8894618</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">-4.8762597</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sanfter Abstieg</td>
+<td style="text-align: left;">Mitte</td>
+<td style="text-align: right;">5.025180</td>
+<td style="text-align: right;">0.5974215</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">-3.8984469</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sanfter Anstieg</td>
+<td style="text-align: left;">Anfang</td>
+<td style="text-align: right;">5.185485</td>
+<td style="text-align: right;">1.8349192</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">4.0530858</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sanfter Anstieg</td>
+<td style="text-align: left;">Ende</td>
+<td style="text-align: right;">6.076072</td>
+<td style="text-align: right;">1.4920417</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">4.3522091</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sanfter Anstieg</td>
+<td style="text-align: left;">Mitte</td>
+<td style="text-align: right;">5.776804</td>
+<td style="text-align: right;">1.7675744</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">4.5941654</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Steiler Abstieg</td>
+<td style="text-align: left;">Anfang</td>
+<td style="text-align: right;">5.110878</td>
+<td style="text-align: right;">1.5130373</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">-28.7716676</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Steiler Abstieg</td>
+<td style="text-align: left;">Ende</td>
+<td style="text-align: right;">6.505309</td>
+<td style="text-align: right;">2.6006103</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">-16.0695646</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Steiler Abstieg</td>
+<td style="text-align: left;">Mitte</td>
+<td style="text-align: right;">7.570879</td>
+<td style="text-align: right;">1.7205787</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">-31.5849288</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Steiler Anstieg</td>
+<td style="text-align: left;">Anfang</td>
+<td style="text-align: right;">8.126848</td>
+<td style="text-align: right;">3.4404757</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">15.3613082</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Steiler Anstieg</td>
+<td style="text-align: left;">Ende</td>
+<td style="text-align: right;">11.145475</td>
+<td style="text-align: right;">4.0984435</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">15.4151619</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Steiler Anstieg</td>
+<td style="text-align: left;">Mitte</td>
+<td style="text-align: right;">7.509476</td>
+<td style="text-align: right;">2.3762346</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">14.8268039</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+</section>
+<section id="discussion" class="level2">
+<h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
+<p>In this work we analyzed the running performance of Daniel over 165 runs and determined the impact of the slope on his running speed, as well as his differences in performance over the duration of a run.</p>
+<p>Some of the variability in the data can be attributed to factors such as forgetting to stop the activity on the watch at the end of the training session or taking breaks during the workout. In fact, speed is based on the time-stamped recording of points, which is provided in time format. With a Garmin watch, it is possible to pause the activity and resume it later. To address this issue, we decided to eliminate consecutive points with the same coordinates and points with a speed lower than 15 min/km. Other extremely fast or slow values may be due to specific types of workouts like intervals and sprints. In the case of uphill training, interval sprints are performed on a short track where uphill sprints are done at maximum speed, and energy is recovered by returning to the starting point at a low speed on the downhill. These uphill workouts usually do not exceed segments of 100-200 meters. Since they are performed repeatedly on the same track, the elevation difference might be negligible or considered a gentle slope. The average speed would still be lower compared to a steady-paced run on a normal route. The same applies to interval training on flat terrain. During interval workouts on flat terrain exceeding 300 meters, very fast segments can be recorded during sprints and very slow segments during recovery phases. There are interval workouts of 500 to 1000 meters where the speed on flat terrain can reach 3:30 min/km.</p>
+<p>Consistent with our expectation, the running speed was highest in flat and gently descending sections of his runs and declined in steeply descending or ascending terrain. While the variation in the measured speeds was lowest in flat sections, we saw a big increase in variability for running speeds measured in descending and ascending terrain. The highest variability was measured in steeply ascending terrain. This could indicate a lack of consistent pacing behaviour in challenging terrain but is more likely to be explained by the pooling of all sections that have an ascending slope of more than 8%, and thus potentially containing much steeper sections as well as sections that are just slightly steeper than 8%.</p>
+<p>Daniel typically started off his runs at a faster pace, that then dropped in the second and last third of his runs. The faster speeds in the beginning, that drop off during later stages of his runs indicate that Daniel starts his runs too fast and can’t maintain those speeds over prolonged periods of times. This behaviour is not observed in steeply ascending sections, indicating that Daniel paces himself well in more challenging terrain. The middle and the final sections are generally absolved at a very similar speed indicating that after the initial high starting speed Daniel settles for a pace that can be maintained over the rest of the run. If the final stretch is steeply ascending, the measured speeds are even higher in the last third compared to the middle third.</p>
+<p>Overall, our data indicate, that Daniel could profit from an improved pacing especially in less challenging (flat, gently descending, gently ascending, steeply descending) terrain located at the beginning of his runs. Pacing himself well in those initial stages of his runs could significantly improve running performance overall.</p>
+<p>Note: We did not have enough time to address the last research question, as we spent more than half of our time on heavy preprocessing. However, these results would have been very useful and interesting for a final assessment of Daniel’s running performance.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<p>Bürgi, R., Lambrecht, M., &amp; Stamm, H. P. (2021). Sport Schweiz 2020: Factsheets Sportarten (p.&nbsp;60). Bundesamt für Sport. https://www.sportobs.ch/inhalte/Downloads/Sport_Schweiz_2020_factsheets_d_screen.pdf.pdf</p>
+<p>Hodun, M., Clarke, R., De Ste Croix, M. B. A., &amp; Hughes, J. D. (2016). Global Positioning System Analysis of Running Performance in Female Field Sports: A Review of the Literature. Strength &amp; Conditioning Journal, 38(2), 49–56. https://doi.org/10.1519/SSC.0000000000000200</p>
+<p>Johansson, R. E., Adolph, S. T., Swart, J., &amp; Lambert, M. I. (2020). Accuracy of GPS sport watches in measuring distance in an ultramarathon running race. International Journal of Sports Science &amp; Coaching, 15(2), 212–219. https://doi.org/10.1177/1747954119899880</p>
+<p>Jones, M. R., West, D. J., Crewther, B. T., Cook, C. J., &amp; Kilduff, L. P. (2015). Quantifying positional and temporal movement patterns in professional rugby union using global positioning system. European Journal of Sport Science, 15(6), 488–496. https://doi.org/10.1080/17461391.2015.1010106</p>
+<p>Laube, P., &amp; Purves, R. S. (2011). How fast is a cow? Cross‐Scale Analysis of Movement Data. Transactions in GIS, 15(3), 401–418. https://doi.org/10.1111/j.1467-9671.2011.01256.x</p>
+<p>Massicotte, P., &amp; South, A. (2023). rnaturalearth: World Map Data from Natural Earth. https://CRAN.R-project.org/package=rnaturalearth</p>
+<p>OpenAI. (2024). Discussion on calculating speed from GPS data in R. https://chat.openai.com/</p>
+<p>Posit team. (2023). RStudio: Integrated Development Environment for R. Posit Software, PBC. http://www.posit.co/</p>
+<p>Zrenner, M., Heyde, C., Duemler, B., Dykman, S., Roecker, K., &amp; Eskofier, B. M. (2021). Retrospective Analysis of Training and Its Response in Marathon Finishers Based on Fitness App Data. Frontiers in Physiology, 12, 669884. https://doi.org/10.3389/fphys.2021.669884</p>
+<section id="wordcount" class="level3">
+<h3 class="anchored" data-anchor-id="wordcount">Wordcount</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"pacman"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>wordcountaddin<span class="sc">::</span><span class="fu">word_count</span>(<span class="st">"index.qmd"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2694</code></pre>
+</div>
 </div>
 </section>
 </section>
@@ -178,18 +484,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -221,7 +516,29 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
       var filterRegex = new RegExp('/' + window.location.host + '/');
@@ -229,7 +546,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
     // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
     for (var i=0; i<links.length; i++) {
       const link = links[i];
       if (!isInternal(link.href)) {
